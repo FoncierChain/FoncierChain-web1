@@ -1,0 +1,49 @@
+{
+  "entities": {
+    "Parcel": {
+      "title": "Parcel",
+      "description": "A registered land parcel in Brazzaville.",
+      "type": "object",
+      "properties": {
+        "parcelId": { "type": "string", "description": "Unique identifier for the parcel (e.g., BZV-45785-SECURE)" },
+        "address": { "type": "string", "description": "Physical address or location description" },
+        "surface": { "type": "number", "description": "Surface area in square meters" },
+        "coordinates": { "type": "array", "description": "GPS coordinates of the polygon limits" },
+        "usage": { "type": "string", "enum": ["Residential", "Commercial", "Industrial", "Agricultural"] },
+        "currentOwner": { "type": "string", "description": "Full name of the current legal owner" },
+        "ownerId": { "type": "string", "description": "ID or Passport number of the owner" },
+        "status": { "type": "string", "enum": ["Validated", "Pending", "Contested"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "hash": { "type": "string", "description": "Cryptographic fingerprint of the parcel data" },
+        "agentUid": { "type": "string", "description": "UID of the agent who registered the parcel" }
+      },
+      "required": ["parcelId", "address", "surface", "coordinates", "currentOwner", "hash"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "A property transfer event.",
+      "type": "object",
+      "properties": {
+        "parcelId": { "type": "string" },
+        "previousOwner": { "type": "string" },
+        "newOwner": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "enum": ["Initial Registration", "Sale", "Inheritance", "Donation"] },
+        "hash": { "type": "string", "description": "Cryptographic fingerprint of the transaction" },
+        "agentUid": { "type": "string" }
+      },
+      "required": ["parcelId", "newOwner", "date", "type", "hash"]
+    }
+  },
+  "firestore": {
+    "/parcels/{parcelId}": {
+      "schema": "Parcel",
+      "description": "Registry of all land parcels."
+    },
+    "/parcels/{parcelId}/history/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Historical records of ownership for a specific parcel."
+    }
+  }
+}

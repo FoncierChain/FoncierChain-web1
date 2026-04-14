@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: parcels
+    // Document ID: parcelId (string)
+    // Fields:
+    //   - parcelId: string (required)
+    //   - address: string (required)
+    //   - surface: number (required)
+    //   - coordinates: list (required)
+    //   - usage: string (enum)
+    //   - currentOwner: string (required)
+    //   - ownerId: string (required)
+    //   - status: string (enum)
+    //   - hash: string (required)
+    //   - agentUid: string (required)
+    //   - createdAt: timestamp
+    //   - updatedAt: timestamp
+    //
+    // Collection: parcels/{parcelId}/history
+    // Fields:
+    //   - parcelId: string
+    //   - previousOwner: string
+    //   - newOwner: string
+    //   - date: timestamp
+    //   - type: string
+    //   - hash: string
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "hamsterlecurieux25@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isAgent() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'agent' || isAdmin());
+    }
+
+    function isValidParcel(data) {
+      return data.parcelId is string && data.parcelId.size() > 0 && data.parcelId.size() < 100 &&
+             data.address is string && data.address.size() > 0 && data.address.size() < 500 &&
+             data.surface is number && data.surface > 0 &&
+             data.coordinates is list && data.coordinates.size() >= 3 &&
+             data.currentOwner is string && data.currentOwner.size() > 0 &&
+             data.hash is string && data.hash.size() == 64;
+    }
+
+    function isValidTransaction(data) {
+      return data.parcelId is string &&
+             data.newOwner is string && data.newOwner.size() > 0 &&
+             data.hash is string && data.hash.size() == 64;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /parcels/{parcelId} {
+      // Public can read parcels for verification
+      allow read: if true;
+      
+      // Only agents can create or update parcels
+      allow create: if isAgent() && isValidParcel(request.resource.data) && request.resource.data.agentUid == request.auth.uid;
+      allow update: if isAgent() && isValidParcel(request.resource.data) && 
+                    (request.resource.data.agentUid == resource.data.agentUid || isAdmin());
+      
+      // Only admin can delete
+      allow delete: if isAdmin();
+
+      match /history/{transactionId} {
+        allow read: if true;
+        allow create: if isAgent() && isValidTransaction(request.resource.data);
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == userId && request.resource.data.role == 'citizen';
+      allow update: if isAdmin();
+    }
+  }
+}
