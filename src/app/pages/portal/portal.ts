@@ -61,7 +61,7 @@ interface Transaction {
           </button>
         </div>
         <p class="mt-4 text-[11px] text-text-muted italic">
-          * La base de données est mise à jour en temps réel par les agents certifiés du cadastre.
+          * La base de données est mise à jour en temps réel par les agents certifiés de AfriChain solutions.
         </p>
       </div>
 

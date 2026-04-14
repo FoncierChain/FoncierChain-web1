@@ -1,7 +1,8 @@
-import {ChangeDetectionStrategy, Component, AfterViewInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, AfterViewInit, inject, PLATFORM_ID} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {isPlatformBrowser} from '@angular/common';
 import {animate, stagger} from "motion";
 
 @Component({
@@ -16,13 +17,13 @@ import {animate, stagger} from "motion";
         <div class="relative z-10 max-w-2xl">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-congo-green/10 text-congo-green text-xs font-bold uppercase tracking-wider mb-6">
             <mat-icon class="!text-sm">verified</mat-icon>
-            Cadastre Numérique Officiel
+            AfriChain solutions Numérique Officiel
           </div>
           <h1 class="text-4xl md:text-5xl font-extrabold text-sidebar-bg mb-6 leading-tight">
             Sécurisez votre patrimoine foncier à <span class="text-congo-green">Brazzaville</span>.
           </h1>
           <p class="text-lg text-text-muted mb-8 leading-relaxed">
-            FoncierChain utilise la technologie blockchain pour garantir l'immutabilité des titres de propriété et éliminer la double attribution des parcelles.
+            AfriChain solutions utilise la technologie blockchain pour garantir l'immutabilité des titres de propriété et éliminer la double attribution des parcelles.
           </p>
           <div class="flex flex-wrap gap-4">
             <button class="sleek-btn-primary !h-12 !px-8" routerLink="/portal">
@@ -90,7 +91,7 @@ import {animate, stagger} from "motion";
             <mat-icon class="text-congo-yellow">explore</mat-icon>
           </div>
           <p class="text-sm text-text-muted mb-6 leading-relaxed">
-            Visualisez le cadastre de Brazzaville en temps réel. Cliquez sur n'importe quelle parcelle pour voir son statut de validation et son certificat numérique.
+            Visualisez le cadastre de Brazzaville en temps réel via AfriChain solutions. Cliquez sur n'importe quelle parcelle pour voir son statut de validation et son certificat numérique.
           </p>
           <button class="sleek-btn-primary !h-10 !px-6 !text-sm" routerLink="/map">Voir la carte</button>
         </div>
@@ -102,12 +103,16 @@ import {animate, stagger} from "motion";
   `]
 })
 export class Home implements AfterViewInit {
+  private platformId = inject(PLATFORM_ID);
+
   ngAfterViewInit() {
-    const items = document.querySelectorAll('.animate-item');
-    animate(
-      items,
-      { opacity: [0, 1], y: [20, 0] },
-      { delay: stagger(0.1), duration: 0.6, ease: "easeOut" }
-    );
+    if (isPlatformBrowser(this.platformId)) {
+      const items = document.querySelectorAll('.animate-item');
+      animate(
+        items,
+        { opacity: [0, 1], y: [20, 0] },
+        { delay: stagger(0.1), duration: 0.6, ease: "easeOut" }
+      );
+    }
   }
 }
