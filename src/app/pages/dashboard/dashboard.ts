@@ -181,7 +181,7 @@ export class Dashboard {
       this.updateHash(val);
     });
 
-    auth.onAuthStateChanged(u => this.user.set(u));
+    auth.onAuthStateChanged((u: User | null) => this.user.set(u));
   }
 
   async login() {

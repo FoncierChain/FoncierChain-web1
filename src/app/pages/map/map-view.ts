@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, ElementRef, ViewChild, signal, After
 import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
-import {collection, getDocs} from 'firebase/firestore';
+import {collection, getDocs, QueryDocumentSnapshot} from 'firebase/firestore';
 import {db} from '../../firebase';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -143,7 +143,7 @@ export class MapView implements AfterViewInit {
   async loadParcels() {
     try {
       const querySnapshot = await getDocs(collection(db, 'parcels'));
-      const parcelData = querySnapshot.docs.map(doc => doc.data() as ParcelData);
+      const parcelData = querySnapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as ParcelData);
       
       if (parcelData.length === 0) {
         // Add mock data if empty
