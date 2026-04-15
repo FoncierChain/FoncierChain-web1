@@ -27,7 +27,7 @@ import {CommonModule} from '@angular/common';
           <div class="flex items-center gap-3 cursor-pointer" routerLink="/">
             <div class="w-1 h-8 bg-gradient-to-b from-congo-green via-congo-yellow to-congo-red"></div>
             <div>
-              <div class="text-base font-extrabold tracking-tight">AfriChain solutions</div>
+              <div class="text-base font-extrabold tracking-tight">FoncierChain</div>
               <div class="text-[10px] opacity-70 tracking-widest uppercase">Rép. du Congo</div>
             </div>
           </div>
