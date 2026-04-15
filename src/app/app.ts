@@ -64,9 +64,13 @@ import {CommonModule} from '@angular/common';
         </nav>
 
         <div class="mt-auto pt-5 border-t border-white/10">
-          <div class="text-xs opacity-60 mb-1">Système National</div>
-          <div class="text-sm font-semibold">AfriChain solutions v1.0</div>
-          <div class="text-[10px] text-congo-yellow mt-1 flex items-center gap-1">
+          <div class="text-[10px] opacity-60 mb-1 uppercase tracking-wider font-bold">Projet</div>
+          <div class="text-sm font-semibold mb-3">FoncierChain (CG-01)</div>
+          
+          <div class="text-[10px] opacity-60 mb-1 uppercase tracking-wider font-bold">Équipe</div>
+          <div class="text-sm font-semibold">AfriChain solutions</div>
+          
+          <div class="text-[10px] text-congo-yellow mt-4 flex items-center gap-1">
             <span class="h-1.5 w-1.5 rounded-full bg-congo-green animate-pulse"></span>
             Serveur Sécurisé Actif
           </div>

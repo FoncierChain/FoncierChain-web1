@@ -17,13 +17,13 @@ import {animate, stagger} from "motion";
         <div class="relative z-10 max-w-2xl">
           <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-congo-green/10 text-congo-green text-xs font-bold uppercase tracking-wider mb-6">
             <mat-icon class="!text-sm">verified</mat-icon>
-            AfriChain solutions Numérique Officiel
+            Projet FoncierChain (CG-01) • Équipe AfriChain solutions
           </div>
           <h1 class="text-4xl md:text-5xl font-extrabold text-sidebar-bg mb-6 leading-tight">
             Sécurisez votre patrimoine foncier à <span class="text-congo-green">Brazzaville</span>.
           </h1>
           <p class="text-lg text-text-muted mb-8 leading-relaxed">
-            AfriChain solutions utilise la technologie blockchain pour garantir l'immutabilité des titres de propriété et éliminer la double attribution des parcelles.
+            FoncierChain utilise la technologie blockchain de AfriChain solutions pour garantir l'immutabilité des titres de propriété et éliminer la double attribution des parcelles à Brazzaville.
           </p>
           <div class="flex flex-wrap gap-4">
             <button class="sleek-btn-primary !h-12 !px-8" routerLink="/portal">

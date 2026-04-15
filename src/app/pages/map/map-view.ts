@@ -40,7 +40,7 @@ interface ParcelData {
         <div class="absolute bottom-4 left-4 z-[1000] bg-white/90 backdrop-blur p-3 lg:p-4 rounded-xl border border-border-color shadow-sm space-y-2">
           <div class="flex items-center gap-2">
             <span class="h-3 w-3 rounded-full bg-congo-green/40 border border-congo-green"></span>
-            <span class="text-[10px] lg:text-xs font-semibold">Sécurisé AfriChain solutions</span>
+            <span class="text-[10px] lg:text-xs font-semibold">Sécurisé FoncierChain</span>
           </div>
           <div class="flex items-center gap-2">
             <span class="h-3 w-3 rounded-full bg-congo-red/40 border border-congo-red"></span>
@@ -110,7 +110,7 @@ interface ParcelData {
         <div class="sleek-card !bg-sidebar-bg !text-white hidden sm:block">
           <div class="text-[10px] font-bold text-congo-yellow uppercase tracking-widest mb-2">Aide à la navigation</div>
           <p class="text-[11px] opacity-70 leading-relaxed">
-            Les zones vertes indiquent des titres fonciers validés par le protocole AfriChain solutions. 
+            Les zones vertes indiquent des titres fonciers validés par le protocole FoncierChain (Équipe AfriChain solutions). 
             Les zones rouges signalent des parcelles avec des transactions en attente de validation.
           </p>
         </div>

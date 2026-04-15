@@ -1,6 +1,6 @@
 {
-  "name": "AfriChain solutions",
-  "description": "Plateforme sécurisée de gestion foncière à Brazzaville (Congo) utilisant la technologie blockchain pour prévenir la double attribution.",
+  "name": "FoncierChain",
+  "description": "Projet FoncierChain (CG-01) - Plateforme sécurisée de gestion foncière par l'équipe AfriChain solutions.",
   "requestFramePermissions": ["geolocation"],
   "majorCapabilities": ["Land Registration", "Property Transfer", "Public Verification", "Interactive Map"]
 }
