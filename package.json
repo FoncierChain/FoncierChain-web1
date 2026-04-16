@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --host 0.0.0.0 --port 3000",
+    "start": "node dist/app/server/server.mjs || ng serve --host 0.0.0.0 --port 3000 --disable-host-check",
+    "dev": "ng serve --host 0.0.0.0 --port 3000 --disable-host-check",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -41,6 +42,7 @@
     "@netlify/angular-runtime": "^3.0.1",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/express": "^5.0.6",
+    "firebase-tools": "^13.30.0",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^25.6.0",
     "angular-eslint": "21.3.1",

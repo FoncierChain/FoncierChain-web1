@@ -185,11 +185,21 @@ export class Dashboard {
   }
 
   async login() {
+    this.loading.set(true);
     try {
       const provider = new GoogleAuthProvider();
+      // On force la sélection du compte pour éviter les connexions automatiques silencieuses qui peuvent échouer
+      provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Login error:", error);
+      let msg = "Erreur de connexion.";
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/unauthorized-domain') {
+        msg = "Domaine non autorisé dans la console Firebase. Ajoutez cet URL aux 'Domaines autorisés'.";
+      }
+      this.snackBar.open(msg, 'Fermer', { duration: 8000 });
+    } finally {
+      this.loading.set(false);
     }
   }
 

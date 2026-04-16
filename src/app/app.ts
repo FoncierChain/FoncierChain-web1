@@ -3,6 +3,8 @@ import {RouterOutlet, RouterLink, RouterLinkActive} from '@angular/router';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {CommonModule} from '@angular/common';
+import {auth} from './firebase';
+import {User} from 'firebase/auth';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -94,8 +96,8 @@ import {CommonModule} from '@angular/common';
           
           <div class="flex items-center gap-2 lg:gap-4">
             <div class="bg-bg-light px-2 lg:px-4 py-1.5 lg:py-2 rounded-lg border border-border-color flex items-center gap-2">
-              <span class="h-2 w-2 rounded-full bg-congo-green"></span>
-              <span class="text-[10px] lg:text-xs font-bold text-sidebar-bg">Connecté</span>
+              <span class="h-2 w-2 rounded-full" [class.bg-congo-green]="user()" [class.bg-congo-red]="!user()"></span>
+              <span class="text-[10px] lg:text-xs font-bold text-sidebar-bg">{{ user() ? 'Agent Connecté' : 'Mode Public' }}</span>
             </div>
           </div>
         </header>
@@ -114,6 +116,11 @@ import {CommonModule} from '@angular/common';
 })
 export class App {
   sidebarOpen = signal(false);
+  user = signal<User | null>(null);
+
+  constructor() {
+    auth.onAuthStateChanged(u => this.user.set(u));
+  }
 
   toggleSidebar() {
     this.sidebarOpen.update(v => !v);

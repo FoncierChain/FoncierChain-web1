@@ -1,10 +1,9 @@
 {
-  "projectId": "hamster-452315",
-  "appId": "1:903921510673:web:9f7ab2c59fd26a806444b0",
-  "apiKey": "AIzaSyDChvpZ3zvog8GHysUAHw5c_Qn__W3U3hw",
-  "authDomain": "hamster-452315.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-900879c9-3b25-4d30-98fd-4943c9a4ba90",
-  "storageBucket": "hamster-452315.firebasestorage.app",
-  "messagingSenderId": "903921510673",
-  "measurementId": ""
+  "apiKey": "AIzaSyADvofe2OdI_FAzunnt2ZRonX7i5IY1jZw",
+  "authDomain": "foncierchain.firebaseapp.com",
+  "projectId": "foncierchain",
+  "storageBucket": "foncierchain.firebasestorage.app",
+  "messagingSenderId": "87574364445",
+  "appId": "1:87574364445:web:bc4e9e26268d02052fa1f4",
+  "measurementId": "G-QRX3F4G6ME"
 }
