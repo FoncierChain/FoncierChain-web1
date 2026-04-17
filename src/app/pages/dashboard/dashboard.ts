@@ -191,11 +191,13 @@ export class Dashboard {
       // On force la sélection du compte pour éviter les connexions automatiques silencieuses qui peuvent échouer
       provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      let msg = "Erreur de connexion.";
+      let msg = `Erreur de connexion (${error?.code || 'Inconnu'}).`;
       if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/unauthorized-domain') {
         msg = "Domaine non autorisé dans la console Firebase. Ajoutez cet URL aux 'Domaines autorisés'.";
+      } else if (error?.code === 'auth/popup-closed-by-user') {
+        msg = "La fenêtre de connexion a été fermée avant la fin de l'authentification.";
       }
       this.snackBar.open(msg, 'Fermer', { duration: 8000 });
     } finally {
