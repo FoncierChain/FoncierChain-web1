@@ -41,9 +41,16 @@ service cloud.firestore {
     }
 
     function isAdmin() {
+      let adminEmails = [
+        "hamsterlecurieux25@gmail.com",
+        "obieychristdany@gmail.com",
+        "chancylouleko657@gmail.com",
+        "dp1370913@gmail.com",
+        "confianceibovi@gmail.com"
+      ];
       return isAuthenticated() && 
         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-         (request.auth.token.email == "hamsterlecurieux25@gmail.com" && request.auth.token.email_verified == true));
+         (request.auth.token.email in adminEmails && request.auth.token.email_verified == true));
     }
 
     function isAgent() {
