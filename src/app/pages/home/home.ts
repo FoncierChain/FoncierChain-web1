@@ -269,6 +269,34 @@ import {CommonModule} from '@angular/common';
               </div>
             </div>
           </div>
+
+          <!-- Quick Actions Restored -->
+          <div class="glass-card p-5">
+            <h3 class="text-xs font-bold text-white uppercase tracking-widest mb-4">Actions Rapides</h3>
+            <div class="space-y-2">
+              <button class="w-full flex items-center justify-between p-3 rounded-lg bg-[#10b98120] border border-[#10b98140] hover:bg-[#10b98130] transition-all group" routerLink="/register">
+                 <div class="flex items-center gap-3">
+                   <mat-icon class="!text-lg text-[--primary]">add_circle</mat-icon>
+                   <span class="text-[11px] font-bold text-[--primary]">Enregistrer une Parcelle</span>
+                 </div>
+                 <mat-icon class="!text-sm text-[--primary] opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</mat-icon>
+              </button>
+              <button class="w-full flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-all group" routerLink="/portal">
+                 <div class="flex items-center gap-3">
+                   <mat-icon class="!text-lg text-slate-400">verified_user</mat-icon>
+                   <span class="text-[11px] font-bold text-white">Vérifier un Titre</span>
+                 </div>
+                 <mat-icon class="!text-sm text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</mat-icon>
+              </button>
+              <button class="w-full flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-all group" routerLink="/registry">
+                 <div class="flex items-center gap-3">
+                   <mat-icon class="!text-lg text-slate-400">account_balance</mat-icon>
+                   <span class="text-[11px] font-bold text-white">Consulter le Registre</span>
+                 </div>
+                 <mat-icon class="!text-sm text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</mat-icon>
+              </button>
+            </div>
+          </div>
           
           <!-- Network Visual -->
           <div class="glass-card p-1 bg-gradient-to-br from-[--primary]/20 to-transparent">

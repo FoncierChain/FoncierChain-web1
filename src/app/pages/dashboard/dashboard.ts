@@ -81,7 +81,7 @@ import {signInWithPopup, GoogleAuthProvider, User} from 'firebase/auth';
                 </div>
               </div>
 
-              <div class="space-y-4 pt-4">
+            <div class="space-y-4 pt-4">
                 <button class="w-full bg-[--primary] hover:bg-[--primary-hover] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.2)]" 
                         (click)="login()" [disabled]="loading()">
                    @if (loading()) {
@@ -90,6 +90,11 @@ import {signInWithPopup, GoogleAuthProvider, User} from 'firebase/auth';
                      <mat-icon>login</mat-icon>
                      Se connecter avec Google
                    }
+                </button>
+                <button class="w-full bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all border border-white/10" 
+                        (click)="demoLogin()" [disabled]="loading()">
+                   <mat-icon class="!text-sm">verified</mat-icon>
+                   Accès Agent Démo
                 </button>
                 <div class="text-center">
                   <a href="#" class="text-[10px] text-slate-500 hover:text-[--primary] transition-colors">Problèmes de connexion ? Contactez le support IT.</a>
@@ -266,41 +271,34 @@ export class Dashboard {
   adminPass = signal('');
 
   async login() {
-    // Hardcoded bypass check
-    if (this.adminId() === 'admin' && this.adminPass() === 'admin') {
-      // Create a mock user to simulate auth
-      const mockUser = {
-        uid: 'admin-mock-id',
-        email: 'admin@foncierchain.local',
-        displayName: 'Administrateur Système',
-        photoURL: null
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-      
-      this.user.set(mockUser);
-      this.snackBar.open("Connexion réussie (Mode Admin local)", "Fermer", { duration: 3000 });
-      return;
-    }
-
     this.loading.set(true);
     try {
       const provider = new GoogleAuthProvider();
-      // On force la sélection du compte pour éviter les connexions automatiques silencieuses qui peuvent échouer
       provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login error:", error);
-      let msg = `Erreur de connexion (${error?.code || 'Inconnu'}).`;
+      let msg = `Erreur de connexion.`;
       if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/unauthorized-domain') {
         msg = "Domaine non autorisé dans la console Firebase. Ajoutez cet URL aux 'Domaines autorisés'.";
-      } else if (error?.code === 'auth/popup-closed-by-user') {
+      } else if (error && typeof error === 'object' && 'code' in error && error.code === 'auth/popup-closed-by-user') {
         msg = "La fenêtre de connexion a été fermée avant la fin de l'authentification.";
       }
       this.snackBar.open(msg, 'Fermer', { duration: 8000 });
     } finally {
       this.loading.set(false);
     }
+  }
+
+  demoLogin() {
+    const mockUser = {
+      uid: 'demo-agent-id',
+      email: 'demo@foncierchain.local',
+      displayName: 'Agent Démo Brazzaville',
+      photoURL: null
+    } as unknown as User;
+    this.user.set(mockUser);
+    this.snackBar.open("Connecté en tant qu'agent démo", "Fermer", { duration: 3000 });
   }
 
   logout() {

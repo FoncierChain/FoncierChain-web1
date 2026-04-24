@@ -11,7 +11,7 @@ export const routes: Routes = [
   },
   {
     path: 'register',
-    loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard)
+    loadComponent: () => import('./pages/register/register').then(m => m.RegisterParcel)
   },
   {
     path: 'map',

@@ -62,7 +62,6 @@ service cloud.firestore {
       return data.parcelId is string && data.parcelId.size() > 0 && data.parcelId.size() < 100 &&
              data.address is string && data.address.size() > 0 && data.address.size() < 500 &&
              data.surface is number && data.surface > 0 &&
-             data.coordinates is list && data.coordinates.size() >= 3 &&
              data.currentOwner is string && data.currentOwner.size() > 0 &&
              data.hash is string && data.hash.size() == 64;
     }
@@ -70,7 +69,7 @@ service cloud.firestore {
     function isValidTransaction(data) {
       return data.parcelId is string &&
              data.newOwner is string && data.newOwner.size() > 0 &&
-             data.hash is string && data.hash.size() == 64;
+             (data.hash is string && data.hash.size() == 64);
     }
 
     // ===============================================================

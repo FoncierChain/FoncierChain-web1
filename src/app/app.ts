@@ -151,6 +151,13 @@ import { NetworkBackground } from './components/network-background';
           </div>
           
           <div class="flex items-center gap-3">
+            @if (!router.url.includes('/register')) {
+              <button class="hidden md:flex items-center gap-2 bg-[--primary] hover:bg-[--primary-hover] text-white px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all shadow-lg shadow-[--primary]/10"
+                      routerLink="/register">
+                <mat-icon class="!text-sm">add_circle</mat-icon>
+                ENREGISTRER
+              </button>
+            }
             <button class="p-2 text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-all">
               <mat-icon class="!text-lg">notifications</mat-icon>
             </button>
@@ -182,7 +189,7 @@ import { NetworkBackground } from './components/network-background';
   `]
 })
 export class App {
-  private router = inject(Router);
+  public router = inject(Router);
   sidebarOpen = signal(false);
   user = signal<User | null>(null);
 
@@ -202,12 +209,12 @@ export class App {
 
   async logout() {
     await signOut(auth);
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/']);
   }
 
   getPageTitle(): string {
     const url = this.router.url;
-    if (url === '/') return 'Tableau de Bord';
+    if (url === '/' || url === '') return 'Tableau de Bord';
     if (url.includes('/register')) return 'Enregistrement';
     if (url.includes('/portal')) return 'Vérification';
     if (url.includes('/registry')) return 'Registre Public';
