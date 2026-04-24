@@ -1,6 +1,6 @@
 {
   "name": "FoncierChain",
-  "description": "Projet FoncierChain (CG-01) - Plateforme sécurisée de gestion foncière par l'équipe AfriChain solutions.",
+  "description": "Projet FoncierChain (CG-01) - Équipe AfriChain solutions. Système unifié de registre foncier et portail public blockchain.",
   "requestFramePermissions": ["geolocation"],
   "majorCapabilities": ["Land Registration", "Property Transfer", "Public Verification", "Interactive Map"]
 }

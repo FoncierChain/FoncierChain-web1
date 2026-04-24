@@ -10,7 +10,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/portal/portal').then(m => m.Portal)
   },
   {
-    path: 'dashboard',
+    path: 'register',
     loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.Dashboard)
   },
   {
@@ -18,20 +18,20 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/map/map-view').then(m => m.MapView)
   },
   { 
-    path: 'parcels', 
-    loadComponent: () => import('./pages/home/home').then(m => m.Home)
-  },
-  { 
     path: 'registry', 
-    loadComponent: () => import('./pages/portal/portal').then(m => m.Portal)
+    loadComponent: () => import('./pages/registry/registry').then(m => m.Registry)
   },
   { 
     path: 'reports', 
-    loadComponent: () => import('./pages/home/home').then(m => m.Home)
+    loadComponent: () => import('./pages/reports/reports').then(m => m.Reports)
   },
   { 
     path: 'settings', 
-    loadComponent: () => import('./pages/home/home').then(m => m.Home)
+    loadComponent: () => import('./pages/settings/settings').then(m => m.Settings)
+  },
+  { 
+    path: 'help', 
+    loadComponent: () => import('./pages/help/help').then(m => m.Help)
   },
   {
     path: '**',

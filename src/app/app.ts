@@ -66,41 +66,54 @@ import { NetworkBackground } from './components/network-background';
             <mat-icon class="!text-lg">dashboard</mat-icon>
             Tableau de Bord
           </a>
-          <a routerLink="/parcels" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
+
+          <a routerLink="/map" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
              (click)="closeSidebarOnMobile()"
              class="flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-            <mat-icon class="!text-lg">account_balance</mat-icon>
-            Registre des Parcelles
+            <mat-icon class="!text-lg">map</mat-icon>
+            Carte des Parcelles
           </a>
-          <a routerLink="/dashboard" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
+
+          <a routerLink="/register" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
              (click)="closeSidebarOnMobile()"
              class="flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
             <mat-icon class="!text-lg">add_circle_outline</mat-icon>
             Enregistrer une Parcelle
           </a>
+
           <a routerLink="/portal" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
              (click)="closeSidebarOnMobile()"
              class="flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
             <mat-icon class="!text-lg">verified_user</mat-icon>
             Vérification
           </a>
+
           <a routerLink="/registry" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
              (click)="closeSidebarOnMobile()"
              class="flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-            <mat-icon class="!text-lg">token</mat-icon>
+            <mat-icon class="!text-lg">account_balance</mat-icon>
             Registre Public
           </a>
+
           <a routerLink="/reports" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
              (click)="closeSidebarOnMobile()"
              class="flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
             <mat-icon class="!text-lg">description</mat-icon>
             Rapports
           </a>
+
           <a routerLink="/settings" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
              (click)="closeSidebarOnMobile()"
              class="flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
             <mat-icon class="!text-lg">settings</mat-icon>
             Paramètres
+          </a>
+
+          <a routerLink="/help" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
+             (click)="closeSidebarOnMobile()"
+             class="flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+            <mat-icon class="!text-lg">help_outline</mat-icon>
+            Aide & FAQ
           </a>
         </nav>
 
@@ -195,22 +208,25 @@ export class App {
   getPageTitle(): string {
     const url = this.router.url;
     if (url === '/') return 'Tableau de Bord';
-    if (url.includes('/dashboard')) return 'Espace Agent';
-    if (url.includes('/portal')) return 'Vérification Publique';
-    if (url.includes('/registry')) return 'Registre Public Blockchain';
-    if (url.includes('/parcels')) return 'Registre des Parcelles';
+    if (url.includes('/register')) return 'Enregistrement';
+    if (url.includes('/portal')) return 'Vérification';
+    if (url.includes('/registry')) return 'Registre Public';
+    if (url.includes('/map')) return 'Carte des Parcelles';
     if (url.includes('/reports')) return 'Rapports Analytiques';
     if (url.includes('/settings')) return 'Paramètres du Système';
+    if (url.includes('/help')) return 'Aide & FAQ';
     return 'FoncierChain';
   }
 
   getPageSubtitle(): string {
     const url = this.router.url;
-    if (url === '/') return 'Vue d’ensemble du registre foncier national';
-    if (url.includes('/dashboard')) return 'Gestion et enregistrement des titres fonciers';
+    if (url === '/') return 'Vue d’ensemble visuelle du registre foncier';
+    if (url.includes('/register')) return 'Gestion et enregistrement des titres fonciers';
     if (url.includes('/portal')) return 'Vérifiez la légitimité d’un titre foncier';
-    if (url.includes('/registry')) return 'Ledger immuable et transparent de toutes les transactions foncières';
-    if (url.includes('/parcels')) return 'Base de données exhaustive des titres fonciers';
+    if (url.includes('/registry')) return 'Ledger immuable et public des transactions';
+    if (url.includes('/map')) return 'Visualisation géographique du cadastre';
+    if (url.includes('/reports')) return 'Rapports détaillés et audit des données';
+    if (url.includes('/help')) return 'Guides utilisateur et questions fréquentes';
     return 'Portail sécurisé de gestion foncière';
   }
 }

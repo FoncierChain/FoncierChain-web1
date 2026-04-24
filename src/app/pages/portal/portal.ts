@@ -1,8 +1,9 @@
-import {ChangeDetectionStrategy, Component, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, signal, inject, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {ActivatedRoute} from '@angular/router';
 import {collection, query, where, getDocs, doc, getDoc} from 'firebase/firestore';
 import {db} from '../../firebase';
 
@@ -93,59 +94,138 @@ interface Transaction {
       </div>
 
       @if (searched() && parcel()) {
-        <!-- Search Results (Glass Layout) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
-           <!-- Details -->
-           <div class="lg:col-span-1 space-y-6">
-              <div class="glass-card p-6 border-l-4 border-l-[--primary]">
-                <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-4">Certificat Actif</div>
-                <h3 class="text-xl font-bold text-white mb-6">{{ parcel()?.parcelId }}</h3>
-                
-                <div class="space-y-4">
-                  <div>
-                    <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Propriétaire</div>
-                    <div class="text-sm font-semibold text-white">{{ parcel()?.currentOwner }}</div>
+        <!-- Search Results (Official Certificate) -->
+        <div class="animate-fade-in space-y-6">
+          <div class="glass-card relative overflow-hidden bg-gradient-to-br from-black/60 to-black/20">
+            <!-- Background Watermark -->
+            <mat-icon class="absolute -right-10 -bottom-10 !text-[240px] text-white/[0.02] rotate-12">verified_user</mat-icon>
+            
+            <div class="relative p-10 border-b border-white/5 flex flex-col md:flex-row justify-between items-start gap-8">
+               <div class="space-y-4">
+                  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#10b98115] text-[--primary] border border-[--primary]/20">
+                    <mat-icon class="!text-sm">verified</mat-icon>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Titre Authentifié Blockchain</span>
                   </div>
-                  <div>
-                    <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Statut Juridique</div>
-                    <div class="text-xs text-[--primary] font-bold flex items-center gap-1">
-                      <mat-icon class="!text-xs">verified</mat-icon>
-                      {{ parcel()?.status }}
+                  <h3 class="text-4xl font-bold text-white tracking-tight">{{ parcel()?.parcelId }}</h3>
+                  <div class="flex items-center gap-6 text-slate-400">
+                    <div class="flex items-center gap-2">
+                       <mat-icon class="!text-sm opacity-50">person</mat-icon>
+                       <span class="text-sm font-medium">{{ parcel()?.currentOwner }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                       <mat-icon class="!text-sm opacity-50">square_foot</mat-icon>
+                       <span class="text-sm font-medium">{{ parcel()?.surface }} m²</span>
                     </div>
                   </div>
-                </div>
-              </div>
-           </div>
+               </div>
 
-           <!-- History -->
-           <div class="lg:col-span-2 glass-card overflow-hidden flex flex-col">
-              <div class="p-5 border-b border-white/5 flex items-center justify-between">
-                <span class="text-xs font-bold text-white uppercase tracking-widest">Preuve Blockchain</span>
-                <mat-icon class="text-slate-500">lock</mat-icon>
-              </div>
-              <div class="flex-1 overflow-x-auto">
-                <table class="w-full text-left">
-                  <thead>
-                     <tr class="text-[10px] text-slate-500 uppercase font-bold border-b border-white/5">
-                        <th class="px-6 py-4">Opération</th>
-                        <th class="px-6 py-4">Propriétaire</th>
-                        <th class="px-6 py-4">Date</th>
-                     </tr>
-                  </thead>
-                  <tbody>
+               <div class="text-right space-y-2">
+                  <div class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Hash de Signature</div>
+                  <div class="text-[11px] font-mono text-[--primary] px-3 py-2 bg-black/40 rounded-lg border border-white/5">
+                    {{ parcel()?.hash }}
+                  </div>
+                  <div class="text-[9px] text-slate-600 font-bold italic">Vérifié par AfriChain Protocol v2.0</div>
+               </div>
+            </div>
+
+            <div class="p-10 grid grid-cols-1 md:grid-cols-2 gap-12">
+               <!-- Left: Legal Details -->
+               <div class="space-y-6">
+                  <h4 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                    <mat-icon class="!text-sm text-slate-500">info_outline</mat-icon>
+                    Informations Légales
+                  </h4>
+                  <div class="grid grid-cols-2 gap-4">
+                     <div>
+                        <div class="text-[9px] text-slate-500 uppercase font-bold mb-1">Localisation</div>
+                        <div class="text-xs text-white">{{ parcel()?.address }}</div>
+                     </div>
+                     <div>
+                        <div class="text-[9px] text-slate-500 uppercase font-bold mb-1">Usage</div>
+                        <div class="text-xs text-white">{{ parcel()?.usage }}</div>
+                     </div>
+                     <div>
+                        <div class="text-[9px] text-slate-500 uppercase font-bold mb-1">Statut Foncier</div>
+                        <div class="text-xs text-[--primary] font-bold">{{ parcel()?.status }}</div>
+                     </div>
+                     <div>
+                        <div class="text-[9px] text-slate-500 uppercase font-bold mb-1">Date d'Inscription</div>
+                        <div class="text-xs text-white">24 Avril 2024</div>
+                     </div>
+                  </div>
+               </div>
+
+               <!-- Right: Blockchain Verification (Transaction History) -->
+               <div class="space-y-6">
+                  <h4 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                    <mat-icon class="!text-sm text-slate-500">history</mat-icon>
+                    Historique des Transactions
+                  </h4>
+                  <div class="space-y-4">
                     @for (tx of history(); track tx.hash) {
-                      <tr class="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
-                        <td class="px-6 py-4">
-                           <span class="badge badge-green text-[9px]">{{ tx.type }}</span>
-                        </td>
-                        <td class="px-6 py-4 text-xs text-white">{{ tx.newOwner }}</td>
-                        <td class="px-6 py-4 text-[10px] text-slate-500">{{ tx.date?.toDate() | date:'shortDate' }}</td>
-                      </tr>
+                      <div class="group p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[--primary]/30 hover:bg-[--primary]/5 transition-all">
+                        <div class="flex justify-between items-start mb-3">
+                          <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-lg bg-black/40 text-slate-400 group-hover:text-[--primary] transition-colors">
+                              <mat-icon class="!text-sm">
+                                {{ tx.type === 'TRANSFER' ? 'swap_horiz' : (tx.type === 'CREATE' ? 'add_circle' : 'edit') }}
+                              </mat-icon>
+                            </div>
+                            <div>
+                              <div class="text-[10px] font-bold text-white uppercase tracking-widest">{{ tx.type }}</div>
+                              <div class="text-[9px] text-slate-500">{{ tx.date?.toDate ? (tx.date.toDate() | date:'medium') : (tx.date | date:'medium') }}</div>
+                            </div>
+                          </div>
+                          <div class="text-right">
+                             <div class="text-[9px] font-mono text-[--primary]">{{ tx.hash.substring(0, 10) }}...</div>
+                             <div class="text-[8px] text-[#10b981] font-bold uppercase tracking-tighter">Confirmé</div>
+                          </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 pt-3 border-t border-white/5">
+                           <div>
+                              <div class="text-[8px] text-slate-500 uppercase font-bold mb-0.5">Parties Impliquées</div>
+                              <div class="text-[10px] text-white font-medium flex items-center gap-1">
+                                 <mat-icon class="!text-[10px] opacity-40">person</mat-icon>
+                                 {{ tx.newOwner }}
+                              </div>
+                           </div>
+                           @if (tx.agentUid) {
+                             <div class="text-right">
+                                <div class="text-[8px] text-slate-500 uppercase font-bold mb-0.5">Signé par Agent</div>
+                                <div class="text-[10px] text-slate-400 font-mono">{{ tx.agentUid.substring(0, 8) }}</div>
+                             </div>
+                           }
+                        </div>
+                      </div>
+                    } @empty {
+                       <div class="p-8 text-center border border-dashed border-white/10 rounded-2xl">
+                          <mat-icon class="!text-2xl text-slate-600 mb-2">history_toggle_off</mat-icon>
+                          <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Aucun historique détaillé</div>
+                       </div>
                     }
-                  </tbody>
-                </table>
+                  </div>
+               </div>
+            </div>
+
+            <!-- Certificate Footer -->
+            <div class="px-10 py-6 bg-white/[0.02] border-t border-white/5 flex justify-between items-center">
+              <div class="flex items-center gap-4">
+                <button class="px-6 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white border border-white/10 transition-all flex items-center gap-2">
+                  <mat-icon class="!text-sm">print</mat-icon>
+                  Imprimer le Certificat
+                </button>
+                <button class="px-6 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white border border-white/10 transition-all flex items-center gap-2">
+                  <mat-icon class="!text-sm">share</mat-icon>
+                  Partager le Lien
+                </button>
               </div>
-           </div>
+              <div class="flex items-center gap-2 text-slate-600">
+                <mat-icon class="!text-xs">verified_user</mat-icon>
+                <span class="text-[9px] font-bold uppercase tracking-tighter">Powered by FoncierChain Node BZV-01</span>
+              </div>
+            </div>
+          </div>
         </div>
       } @else if (searched() && !loading() && !parcel()) {
         <div class="glass-card p-12 text-center space-y-4 border-dashed border-white/20">
@@ -194,12 +274,23 @@ interface Transaction {
     :host { display: block; }
   `]
 })
-export class Portal {
+export class Portal implements OnInit {
   searchQuery = '';
   loading = signal(false);
   searched = signal(false);
   parcel = signal<Parcel | null>(null);
   history = signal<Transaction[]>([]);
+
+  private route = inject(ActivatedRoute);
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['id']) {
+        this.searchQuery = params['id'];
+        this.search();
+      }
+    });
+  }
 
   async search() {
     if (!this.searchQuery.trim()) return;
