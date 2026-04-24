@@ -1,113 +1,84 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  
-  --color-congo-green: #009543;
-  --color-congo-yellow: #FBDE4A;
-  --color-congo-red: #DC241F;
-  
-  --color-bg-light: #F4F7F6;
-  --color-sidebar-bg: #1A1C1E;
-  --color-card-bg: #FFFFFF;
-  --color-text-main: #2D3436;
-  --color-text-muted: #636E72;
-  --color-border-color: #DFE6E9;
+}
 
-  --color-primary: var(--color-congo-green);
-  --color-secondary: var(--color-congo-yellow);
-  --color-accent: var(--color-congo-red);
+:root {
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --bg-dark: #0b111a;
+  --bg-card: #161b28;
+  --bg-sidebar: #0f172a;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
 }
 
 html, body {
   height: 100%;
   margin: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
   font-family: var(--font-sans);
-  background-color: var(--color-bg-light);
-  color: var(--color-text-main);
 }
 
-/* Sleek Interface Layout Patterns */
-.sleek-card {
-  background: var(--color-card-bg);
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid var(--color-border-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+/* Glassmorphism & Card Styles */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.sleek-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--color-border-color);
-  padding-bottom: 16px;
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
-.sleek-card-title {
-  font-size: 14px;
-  font-weight: 700;
+/* Typography Utilities */
+.text-xxs {
+  font-size: 0.65rem;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Badge Styles */
+.badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--color-sidebar-bg);
 }
 
-.sleek-search-container {
-  background: var(--color-card-bg);
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  display: flex;
-  gap: 12px;
-  border: 1px solid var(--color-border-color);
+.badge-green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.badge-blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.badge-yellow { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.badge-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.sleek-btn-primary {
-  background: var(--color-congo-green);
-  color: white;
-  border: none;
-  padding: 0 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.2s;
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
 }
 
-.sleek-btn-primary:hover {
-  opacity: 0.9;
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
 }
 
-.sleek-data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.sleek-data-table th {
-  text-align: left;
-  padding: 12px;
-  background: #F9FAFB;
-  color: var(--color-text-muted);
-  font-weight: 600;
-  border-bottom: 1px solid var(--color-border-color);
-}
-
-.sleek-data-table td {
-  padding: 12px;
-  border-bottom: 1px solid var(--color-border-color);
-}
-
-.sleek-status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  background: #E8F5E9;
-  color: var(--color-congo-green);
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
 
 /* Leaflet map styles */
@@ -115,4 +86,20 @@ html, body {
   height: 100%;
   width: 100%;
   z-index: 1;
+  background: #0b111a !important; /* Force dark background behind tiles */
+}
+
+/* Custom transitions */
+.transition-200 {
+  transition: all 0.2s ease;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
 }

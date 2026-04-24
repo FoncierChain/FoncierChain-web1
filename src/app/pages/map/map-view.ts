@@ -26,25 +26,25 @@ interface ParcelData {
   standalone: true,
   imports: [CommonModule, MatIconModule, MatButtonModule],
   template: `
-    <div class="h-full flex flex-col lg:flex-row gap-4 lg:gap-8">
+    <div class="h-full flex flex-col lg:flex-row gap-4 lg:gap-8 animate-fade-in">
       <!-- Map Container -->
-      <div class="flex-1 sleek-card !p-0 overflow-hidden relative min-h-[400px]">
-        <div class="absolute top-4 left-4 z-[1000] bg-white/90 backdrop-blur px-4 py-2 rounded-lg border border-border-color shadow-sm">
-          <div class="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Vue Cartographique</div>
-          <div class="text-sm font-bold text-sidebar-bg">Brazzaville Centre</div>
+      <div class="flex-1 glass-card !p-0 overflow-hidden relative min-h-[400px] border border-white/5">
+        <div class="absolute top-4 left-4 z-[1000] bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 shadow-2xl">
+          <div class="text-[10px] font-bold text-[--primary] uppercase tracking-widest mb-1">Vue Cartographique Blockchain</div>
+          <div class="text-sm font-bold text-white">Brazzaville Centre — Système SIG-24</div>
         </div>
         
-        <div #mapContainer class="h-full w-full"></div>
+        <div #mapContainer class="h-full w-full grayscale contrast-125 invert-[0.1]"></div>
 
         <!-- Legend -->
-        <div class="absolute bottom-4 left-4 z-[1000] bg-white/90 backdrop-blur p-3 lg:p-4 rounded-xl border border-border-color shadow-sm space-y-2">
+        <div class="absolute bottom-4 left-4 z-[1000] bg-black/60 backdrop-blur-md p-3 lg:p-4 rounded-xl border border-white/10 shadow-2xl space-y-2">
           <div class="flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-congo-green/40 border border-congo-green"></span>
-            <span class="text-[10px] lg:text-xs font-semibold">Sécurisé FoncierChain</span>
+            <span class="h-3 w-3 rounded-full bg-[--primary]/40 border border-[--primary] shadow-[0_0_8px_var(--primary)]"></span>
+            <span class="text-[10px] lg:text-xs font-semibold text-white">Sécurisé FoncierChain</span>
           </div>
           <div class="flex items-center gap-2">
-            <span class="h-3 w-3 rounded-full bg-congo-red/40 border border-congo-red"></span>
-            <span class="text-[10px] lg:text-xs font-semibold">En cours de validation</span>
+            <span class="h-3 w-3 rounded-full bg-red-500/40 border border-red-500 shadow-[0_0_8px_#ef4444]"></span>
+            <span class="text-[10px] lg:text-xs font-semibold text-white">En cours de validation</span>
           </div>
         </div>
       </div>
@@ -52,66 +52,66 @@ interface ParcelData {
       <!-- Sidebar Details -->
       <div class="w-full lg:w-80 flex flex-col gap-4 lg:gap-6">
         @if (selectedParcel()) {
-          <div class="sleek-card space-y-4 lg:space-y-6 animate-in fade-in slide-in-from-bottom-4 lg:slide-in-from-right-4 duration-300">
-            <div class="sleek-card-header">
-              <span class="sleek-card-title">Détails de la Sélection</span>
-              <button (click)="selectedParcel.set(null)" class="text-text-muted hover:text-congo-red">
+          <div class="glass-card p-6 space-y-6 animate-fade-in border-l-4 border-l-[--primary]">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Détails de la Sélection</div>
+                <h3 class="text-xl font-bold text-white">{{selectedParcel()?.parcelId}}</h3>
+              </div>
+              <button (click)="selectedParcel.set(null)" class="text-slate-500 hover:text-white transition-colors">
                 <mat-icon class="!text-lg">close</mat-icon>
               </button>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-              <div class="space-y-4">
+            <div class="space-y-4">
+              <div>
+                <span class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Propriétaire</span>
+                <div class="text-sm font-semibold text-white">{{selectedParcel()?.currentOwner}}</div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <span class="text-[10px] uppercase text-text-muted font-bold block mb-1">ID Parcelle</span>
-                  <div class="text-base lg:text-lg font-bold text-sidebar-bg">{{selectedParcel()?.parcelId}}</div>
+                  <span class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Surface</span>
+                  <div class="text-xs text-white">{{selectedParcel()?.surface}} m²</div>
                 </div>
                 <div>
-                  <span class="text-[10px] uppercase text-text-muted font-bold block mb-1">Propriétaire</span>
-                  <div class="text-sm font-semibold">{{selectedParcel()?.currentOwner}}</div>
+                  <span class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Usage</span>
+                  <div class="text-xs text-white">{{selectedParcel()?.usage}}</div>
                 </div>
               </div>
-              <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <span class="text-[10px] uppercase text-text-muted font-bold block mb-1">Surface</span>
-                    <div class="text-xs">{{selectedParcel()?.surface}} m²</div>
-                  </div>
-                  <div>
-                    <span class="text-[10px] uppercase text-text-muted font-bold block mb-1">Usage</span>
-                    <div class="text-xs">{{selectedParcel()?.usage}}</div>
-                  </div>
-                </div>
-                <div>
-                  <span class="text-[10px] uppercase text-text-muted font-bold block mb-1">Adresse</span>
-                  <div class="text-xs text-text-muted">{{selectedParcel()?.address}}</div>
-                </div>
+              <div>
+                <span class="text-[10px] uppercase text-slate-500 font-bold block mb-1">Adresse</span>
+                <div class="text-xs text-slate-400">{{selectedParcel()?.address}}</div>
               </div>
             </div>
 
-            <div class="pt-4 lg:pt-6 border-t border-border-color">
-              <button class="sleek-btn-primary w-full h-10 flex items-center justify-center gap-2" 
+            <div class="pt-6 border-t border-white/5 space-y-3">
+              <button class="w-full bg-[--primary]/10 hover:bg-[--primary]/20 text-[--primary] h-10 rounded-lg text-xs font-bold flex items-center justify-center gap-2 border border-[--primary]/20 transition-all" 
                       (click)="viewHistory()">
                 <mat-icon class="!text-sm">history</mat-icon>
-                Voir l'Historique
+                Consulter l'Historique
               </button>
+              <div class="p-3 bg-black/40 border border-white/5 rounded-lg text-[9px] font-mono text-slate-500 break-all leading-relaxed">
+                Hash: {{ selectedParcel()?.hash }}
+              </div>
             </div>
           </div>
         } @else {
-          <div class="sleek-card flex-1 flex flex-col items-center justify-center text-center p-6 lg:p-8">
-            <div class="h-12 w-12 lg:h-16 lg:w-16 rounded-2xl bg-bg-light flex items-center justify-center text-text-muted mb-4">
-              <mat-icon class="!text-2xl lg:!text-3xl">touch_app</mat-icon>
+          <div class="glass-card flex-1 flex flex-col items-center justify-center text-center p-8 border-dashed border-white/10">
+            <div class="h-16 w-16 rounded-2xl bg-white/5 flex items-center justify-center text-slate-500 mb-4">
+              <mat-icon class="!text-3xl">touch_app</mat-icon>
             </div>
-            <h3 class="font-bold text-sidebar-bg mb-2">Sélectionnez une parcelle</h3>
-            <p class="text-[11px] lg:text-xs text-text-muted">Cliquez sur une zone colorée de la carte pour consulter les informations certifiées.</p>
+            <h3 class="font-bold text-white mb-2">Sélectionnez une parcelle</h3>
+            <p class="text-[11px] text-slate-500 max-w-[180px]">Cliquez sur une zone du cadastre pour consulter les données immuables.</p>
           </div>
         }
 
-        <div class="sleek-card !bg-sidebar-bg !text-white hidden sm:block">
-          <div class="text-[10px] font-bold text-congo-yellow uppercase tracking-widest mb-2">Aide à la navigation</div>
-          <p class="text-[11px] opacity-70 leading-relaxed">
-            Les zones vertes indiquent des titres fonciers validés par le protocole FoncierChain (Équipe AfriChain solutions). 
-            Les zones rouges signalent des parcelles avec des transactions en attente de validation.
+        <div class="glass-card p-5 bg-[#10b98105] border border-[#10b98115]">
+          <div class="text-[10px] font-bold text-[--primary] uppercase tracking-widest mb-2 flex items-center gap-2">
+            <mat-icon class="!text-xs">info</mat-icon>
+            Protocole SIG
+          </div>
+          <p class="text-[10px] text-slate-500 leading-relaxed">
+            Les zones vertes indiquent des titres certitifiés. Le rendu utilise une couche filtrée pour maximiser le contraste des données blockchain.
           </p>
         </div>
       </div>

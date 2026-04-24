@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, signal, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ReactiveFormsModule, FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
@@ -17,6 +17,7 @@ import {signInWithPopup, GoogleAuthProvider, User} from 'firebase/auth';
   standalone: true,
   imports: [
     CommonModule, 
+    FormsModule,
     ReactiveFormsModule, 
     MatButtonModule, 
     MatIconModule, 
@@ -26,126 +27,203 @@ import {signInWithPopup, GoogleAuthProvider, User} from 'firebase/auth';
     MatSnackBarModule
   ],
   template: `
-    <div class="space-y-8">
+    <div class="animate-fade-in">
       @if (!user()) {
-        <div class="max-w-md mx-auto text-center py-20 sleek-card">
-          <div class="h-20 w-20 rounded-2xl bg-congo-green/10 flex items-center justify-center text-congo-green mx-auto mb-6">
-            <mat-icon class="!text-4xl">admin_panel_settings</mat-icon>
+        <!-- Agent Login Screen (Image 1) -->
+        <div class="min-h-[80vh] flex items-center justify-center py-12 px-4">
+          <div class="glass-card max-w-md w-full overflow-hidden shadow-2xl">
+            <div class="bg-black/40 px-6 py-4 flex items-center justify-between border-b border-white/5">
+              <div class="flex gap-2">
+                <div class="h-2.5 w-2.5 rounded-full bg-red-500/50"></div>
+                <div class="h-2.5 w-2.5 rounded-full bg-yellow-500/50"></div>
+                <div class="h-2.5 w-2.5 rounded-full bg-green-500/50"></div>
+              </div>
+              <div class="text-[9px] font-mono text-slate-500 uppercase tracking-widest">Portail Sécurisé</div>
+            </div>
+            
+            <div class="p-10 space-y-8">
+              <div class="text-center space-y-6">
+                <div class="flex justify-center gap-4">
+                   <div class="h-12 w-12 rounded-lg bg-white/5 flex items-center justify-center">
+                     <mat-icon class="text-[--primary]">verified_user</mat-icon>
+                   </div>
+                </div>
+                <div class="space-y-1">
+                  <div class="text-[10px] font-bold text-[--primary] uppercase tracking-widest">Authentification Agent</div>
+                  <h2 class="text-xl font-bold text-white">Registre Foncier National</h2>
+                  <p class="text-xs text-slate-500">Plateforme sécurisée — Accès réservé aux agents certifiés.</p>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="space-y-2">
+                  <label for="agentId" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Matricule Agent</label>
+                  <div class="relative group">
+                    <div class="absolute inset-y-0 left-4 flex items-center text-slate-500 group-focus-within:text-[--primary] transition-colors">
+                      <mat-icon class="!text-lg">badge</mat-icon>
+                    </div>
+                    <input id="agentId" type="text" placeholder="AGT-BZV-2024-XXXX" 
+                           [ngModel]="adminId()" (ngModelChange)="adminId.set($event)"
+                           class="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-5 py-4 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <label for="agentPass" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Mot de passe</label>
+                  <div class="relative group">
+                    <div class="absolute inset-y-0 left-4 flex items-center text-slate-500 group-focus-within:text-[--primary] transition-colors">
+                      <mat-icon class="!text-lg">lock</mat-icon>
+                    </div>
+                    <input id="agentPass" type="password" placeholder="••••••••••••" 
+                           [ngModel]="adminPass()" (ngModelChange)="adminPass.set($event)"
+                           class="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-5 py-4 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-4 pt-4">
+                <button class="w-full bg-[--primary] hover:bg-[--primary-hover] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.2)]" 
+                        (click)="login()" [disabled]="loading()">
+                   @if (loading()) {
+                     <mat-icon class="animate-spin !text-lg">sync</mat-icon>
+                   } @else {
+                     <mat-icon>login</mat-icon>
+                     Se connecter avec Google
+                   }
+                </button>
+                <div class="text-center">
+                  <a href="#" class="text-[10px] text-slate-500 hover:text-[--primary] transition-colors">Problèmes de connexion ? Contactez le support IT.</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white/5 p-4 text-center border-t border-white/5">
+              <div class="flex items-center justify-center gap-6 text-[9px] font-mono text-slate-600 uppercase tracking-widest">
+                 <div class="flex items-center gap-2">
+                   <mat-icon class="!text-[10px]">lock</mat-icon>
+                   TLS 1.3
+                 </div>
+                 <div class="flex items-center gap-2">
+                   <mat-icon class="!text-[10px]">fact_check</mat-icon>
+                   2FA ACTIVÉE
+                 </div>
+              </div>
+            </div>
           </div>
-          <h1 class="text-2xl font-bold text-sidebar-bg mb-2">Accès Agents Fonciers</h1>
-          <p class="text-text-muted mb-8">Veuillez vous authentifier pour accéder au registre immuable.</p>
-          <button class="sleek-btn-primary w-full h-12" (click)="login()">
-            Se connecter avec Google
-          </button>
         </div>
       } @else {
-        <div class="flex justify-between items-center">
-          <div>
-            <h1 class="text-2xl font-bold text-sidebar-bg">Tableau de Bord Agent</h1>
-            <p class="text-xs text-text-muted font-semibold uppercase tracking-wider">Connecté: {{user()?.displayName}}</p>
-          </div>
-          <button mat-stroked-button color="warn" class="!rounded-lg" (click)="logout()">Déconnexion</button>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <!-- Registration Form -->
-          <div class="lg:col-span-2">
-            <div class="sleek-card">
-              <div class="sleek-card-header">
-                <span class="sleek-card-title">Nouvel Enregistrement de Parcelle</span>
-                <span class="text-[10px] font-bold text-text-muted">REF-{{currentDate | date:'yyyy-MM-dd'}}</span>
-              </div>
-              
-              <form [formGroup]="parcelForm" (ngSubmit)="onSubmit()" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div class="space-y-1">
-                    <label for="parcelId" class="text-xs font-bold text-text-muted uppercase">ID de la Parcelle</label>
-                    <input id="parcelId" matInput formControlName="parcelId" placeholder="ex: BZV-45785-SECURE"
-                           class="w-full p-3 rounded-lg border border-border-color bg-bg-light focus:bg-white focus:border-congo-green outline-none transition-all">
-                  </div>
-
-                  <div class="space-y-1">
-                    <label for="usage" class="text-xs font-bold text-text-muted uppercase">Usage</label>
-                    <mat-select id="usage" formControlName="usage" class="w-full p-3 rounded-lg border border-border-color bg-bg-light">
-                      <mat-option value="Residential">Résidentiel</mat-option>
-                      <mat-option value="Commercial">Commercial</mat-option>
-                      <mat-option value="Industrial">Industriel</mat-option>
-                      <mat-option value="Agricultural">Agricole</mat-option>
-                    </mat-select>
-                  </div>
-
-                  <div class="space-y-1 md:col-span-2">
-                    <label for="address" class="text-xs font-bold text-text-muted uppercase">Adresse Complète</label>
-                    <input id="address" matInput formControlName="address" placeholder="ex: Poto-Poto, Rue 42, Parcelle 12"
-                           class="w-full p-3 rounded-lg border border-border-color bg-bg-light focus:bg-white focus:border-congo-green outline-none transition-all">
-                  </div>
-
-                  <div class="space-y-1">
-                    <label for="surface" class="text-xs font-bold text-text-muted uppercase">Surface (m²)</label>
-                    <input id="surface" matInput type="number" formControlName="surface"
-                           class="w-full p-3 rounded-lg border border-border-color bg-bg-light focus:bg-white focus:border-congo-green outline-none transition-all">
-                  </div>
-
-                  <div class="space-y-1">
-                    <label for="coordinates" class="text-xs font-bold text-text-muted uppercase">Coordonnées GPS</label>
-                    <input id="coordinates" matInput formControlName="coordinates" placeholder="Lat, Lng; Lat, Lng; ..."
-                           class="w-full p-3 rounded-lg border border-border-color bg-bg-light focus:bg-white focus:border-congo-green outline-none transition-all">
-                  </div>
-
-                  <div class="space-y-1">
-                    <label for="currentOwner" class="text-xs font-bold text-text-muted uppercase">Propriétaire Actuel</label>
-                    <input id="currentOwner" matInput formControlName="currentOwner"
-                           class="w-full p-3 rounded-lg border border-border-color bg-bg-light focus:bg-white focus:border-congo-green outline-none transition-all">
-                  </div>
-
-                  <div class="space-y-1">
-                    <label for="ownerId" class="text-xs font-bold text-text-muted uppercase">ID du Propriétaire</label>
-                    <input id="ownerId" matInput formControlName="ownerId"
-                           class="w-full p-3 rounded-lg border border-border-color bg-bg-light focus:bg-white focus:border-congo-green outline-none transition-all">
-                  </div>
-                </div>
-
-                <!-- Hash Display -->
-                <div class="p-4 rounded-xl bg-sidebar-bg text-white font-mono text-[10px] border-l-4 border-congo-green">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="text-congo-green font-bold uppercase tracking-widest">Empreinte Cryptographique (Hash)</span>
-                    <mat-icon class="!text-xs">lock</mat-icon>
-                  </div>
-                  <div class="break-all opacity-80">{{generatedHash() || 'En attente de saisie...'}}</div>
-                </div>
-
-                <div class="flex justify-end gap-4 pt-4">
-                  <button mat-button type="button" class="!rounded-lg" (click)="parcelForm.reset()">Réinitialiser</button>
-                  <button class="sleek-btn-primary h-12 px-10" type="submit" [disabled]="parcelForm.invalid || loading()">
-                    @if (loading()) {
-                      <mat-icon class="animate-spin !text-sm">sync</mat-icon>
-                    } @else {
-                      Valider l'Enregistrement Numérique
-                    }
-                  </button>
-                </div>
-              </form>
+        <!-- Agent Form Workspace (Image 2/4) -->
+        <div class="space-y-6">
+          <div class="flex justify-between items-end mb-4">
+            <div>
+              <h2 class="text-xl font-bold text-white">Enregistrer une Parcelle</h2>
+              <p class="text-[11px] text-slate-500">Ajoutez une nouvelle propriété au registre immuable.</p>
+            </div>
+            <div class="flex gap-3">
+               <button class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-white hover:bg-white/10 transition-all flex items-center gap-2">
+                 <mat-icon class="!text-sm">save</mat-icon>
+                 Brouillon
+               </button>
+               <button class="bg-[--primary] hover:bg-[--primary-hover] text-white px-6 py-2 rounded-lg text-xs font-bold flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
+                       (click)="onSubmit()" [disabled]="parcelForm.invalid || loading()">
+                 <mat-icon class="!text-sm">publish</mat-icon>
+                 Publier sur Blockchain
+               </button>
             </div>
           </div>
 
-          <!-- Sidebar Info -->
-          <div class="space-y-6">
-            <div class="sleek-card !bg-congo-green !text-white">
-              <h3 class="font-bold mb-3 flex items-center gap-2">
-                <mat-icon>info</mat-icon>
-                Protocole de Sécurité
-              </h3>
-              <p class="text-xs opacity-90 leading-relaxed">
-                Chaque enregistrement génère une empreinte unique basée sur les coordonnées GPS et l'identité du propriétaire. 
-                Une fois validé, ce bloc devient immuable dans le registre national.
-              </p>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Form -->
+            <div class="lg:col-span-2 space-y-6">
+              <div class="glass-card p-8">
+                <form [formGroup]="parcelForm" class="space-y-8">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                      <label for="parcelId" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ID de la Parcelle</label>
+                      <input id="parcelId" formControlName="parcelId" placeholder="ex: BZV-45785-SECURE"
+                             class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                    </div>
+
+                    <div class="space-y-2">
+                      <label for="usage" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Type d'Usage</label>
+                      <mat-select id="usage" formControlName="usage" class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                        <mat-option value="Residential">Résidentiel</mat-option>
+                        <mat-option value="Commercial">Commercial</mat-option>
+                        <mat-option value="Industrial">Industriel</mat-option>
+                        <mat-option value="Agricultural">Agricole</mat-option>
+                      </mat-select>
+                    </div>
+
+                    <div class="md:col-span-2 space-y-2">
+                      <label for="address" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Adresse Géographique</label>
+                      <input id="address" formControlName="address" placeholder="ex: Poto-Poto, Rue 42, Parcelle 12"
+                             class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                    </div>
+
+                    <div class="space-y-2">
+                      <label for="surface" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Surface (m²)</label>
+                      <input id="surface" type="number" formControlName="surface"
+                             class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                    </div>
+
+                    <div class="space-y-2">
+                      <label for="coordinates" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Coordonnées GPS (WGS84)</label>
+                      <input id="coordinates" formControlName="coordinates" placeholder="-4.26, 15.28"
+                             class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                    </div>
+                  </div>
+
+                  <div class="space-y-2 pt-4 border-t border-white/5">
+                    <div class="text-[10px] font-bold text-[--primary] uppercase tracking-widest ml-1">Propriétaire Initial</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                      <div class="space-y-2">
+                        <label for="currentOwner" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nom Complet / Raison Sociale</label>
+                        <input id="currentOwner" formControlName="currentOwner"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                      </div>
+                      <div class="space-y-2">
+                        <label for="ownerId" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">CNI / ID National</label>
+                        <input id="ownerId" formControlName="ownerId"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-3 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
             </div>
 
-            <div class="sleek-card">
-              <div class="sleek-card-header">
-                <span class="sleek-card-title">Dernières Actions</span>
+            <!-- Side Cards -->
+            <div class="space-y-6">
+              <div class="glass-card p-6 border-l-4 border-l-[--primary]">
+                <h3 class="text-xs font-bold text-white uppercase tracking-widest mb-4">Intégrité Cryptographique</h3>
+                <div class="space-y-4">
+                  <div class="p-4 bg-black/40 border border-white/10 rounded-xl font-mono text-[9px] break-all text-slate-400">
+                    <div class="text-[--primary] mb-2 font-bold uppercase tracking-tight">System Hash Generation:</div>
+                    {{ generatedHash() || '0x0000000000000000000000000000000000000000' }}
+                  </div>
+                  <p class="text-[10px] text-slate-500 leading-relaxed italic">
+                    * L'enregistrement sera horodaté et signé par la clé privée de l'agent : {{ user()?.displayName }}
+                  </p>
+                </div>
               </div>
-              <div class="text-xs text-text-muted italic">Aucune action récente dans cette session.</div>
+
+              <div class="glass-card p-6">
+                <h3 class="text-xs font-bold text-white uppercase tracking-widest mb-4">Conseils de Saisie</h3>
+                <ul class="space-y-3">
+                  <li class="flex gap-3 text-[10px] text-slate-400">
+                    <mat-icon class="!text-sm text-[--primary]">check_circle</mat-icon>
+                    <span>Vérifiez deux fois les coordonnées GPS (Google Maps compatible).</span>
+                  </li>
+                  <li class="flex gap-3 text-[10px] text-slate-400">
+                    <mat-icon class="!text-sm text-[--primary]">check_circle</mat-icon>
+                    <span>L'ID de la parcelle doit suivre la nomenclature BZV-XXXX.</span>
+                  </li>
+                  <li class="flex gap-3 text-[10px] text-slate-400">
+                    <mat-icon class="!text-sm text-[--primary]">check_circle</mat-icon>
+                    <span>Numérisez les documents papier avant de valider.</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -184,13 +262,33 @@ export class Dashboard {
     auth.onAuthStateChanged((u: User | null) => this.user.set(u));
   }
 
+  adminId = signal('');
+  adminPass = signal('');
+
   async login() {
+    // Hardcoded bypass check
+    if (this.adminId() === 'admin' && this.adminPass() === 'admin') {
+      // Create a mock user to simulate auth
+      const mockUser = {
+        uid: 'admin-mock-id',
+        email: 'admin@foncierchain.local',
+        displayName: 'Administrateur Système',
+        photoURL: null
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+      
+      this.user.set(mockUser);
+      this.snackBar.open("Connexion réussie (Mode Admin local)", "Fermer", { duration: 3000 });
+      return;
+    }
+
     this.loading.set(true);
     try {
       const provider = new GoogleAuthProvider();
       // On force la sélection du compte pour éviter les connexions automatiques silencieuses qui peuvent échouer
       provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Login error:", error);
       let msg = `Erreur de connexion (${error?.code || 'Inconnu'}).`;

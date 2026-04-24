@@ -1,118 +1,230 @@
-import {ChangeDetectionStrategy, Component, AfterViewInit, inject, PLATFORM_ID} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {isPlatformBrowser} from '@angular/common';
-import {animate, stagger} from "motion";
+import {CommonModule} from '@angular/common';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatIconModule],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule],
   template: `
-    <div class="space-y-8">
-      <!-- Hero Section -->
-      <section class="sleek-card !p-12 relative overflow-hidden bg-white">
-        <div class="relative z-10 max-w-2xl">
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-congo-green/10 text-congo-green text-xs font-bold uppercase tracking-wider mb-6">
-            <mat-icon class="!text-sm">verified</mat-icon>
-            Projet FoncierChain (CG-01) • Équipe AfriChain solutions
+    <div class="space-y-6 animate-fade-in">
+      
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="glass-card hover-glow p-5 flex flex-col gap-4 transition-200">
+          <div class="flex items-center justify-between">
+            <div class="h-10 w-10 rounded-lg bg-[#10b98110] flex items-center justify-center text-[--primary]">
+              <mat-icon>location_on</mat-icon>
+            </div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">+128 ce mois</div>
           </div>
-          <h1 class="text-4xl md:text-5xl font-extrabold text-sidebar-bg mb-6 leading-tight">
-            Sécurisez votre patrimoine foncier à <span class="text-congo-green">Brazzaville</span>.
-          </h1>
-          <p class="text-lg text-text-muted mb-8 leading-relaxed">
-            FoncierChain utilise la technologie blockchain de AfriChain solutions pour garantir l'immutabilité des titres de propriété et éliminer la double attribution des parcelles à Brazzaville.
-          </p>
-          <div class="flex flex-wrap gap-4">
-            <button class="sleek-btn-primary !h-12 !px-8" routerLink="/portal">
-              Vérifier une parcelle
-            </button>
-            <button class="px-8 py-3 rounded-lg border border-border-color font-semibold hover:bg-gray-50 transition-colors" routerLink="/map">
-              Explorer la carte
-            </button>
+          <div>
+            <div class="text-2xl font-bold text-white">14 832</div>
+            <div class="text-[11px] text-slate-500 font-medium">Parcelles Enregistrées</div>
           </div>
         </div>
-        
-        <!-- Decorative Flag Strip -->
-        <div class="absolute top-0 right-0 w-1/3 h-full opacity-5 pointer-events-none">
-          <div class="h-full w-full bg-gradient-to-l from-congo-green via-congo-yellow to-congo-red"></div>
-        </div>
-      </section>
 
-      <!-- Stats Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="sleek-card flex items-center gap-6 animate-item">
-          <div class="h-14 w-14 rounded-2xl bg-congo-green/10 flex items-center justify-center text-congo-green">
-            <mat-icon class="!text-3xl">map</mat-icon>
+        <div class="glass-card hover-glow p-5 flex flex-col gap-4 transition-200">
+          <div class="flex items-center justify-between">
+            <div class="h-10 w-10 rounded-lg bg-[#10b98110] flex items-center justify-center text-[--primary]">
+              <mat-icon>verified_user</mat-icon>
+            </div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">+47 aujourd'hui</div>
           </div>
           <div>
-            <div class="text-2xl font-bold text-sidebar-bg">12,450+</div>
-            <div class="text-xs text-text-muted font-semibold uppercase tracking-wider">Parcelles Enregistrées</div>
+            <div class="text-2xl font-bold text-white">9 241</div>
+            <div class="text-[11px] text-slate-500 font-medium">Titres Vérifiés</div>
           </div>
         </div>
-        <div class="sleek-card flex items-center gap-6 animate-item">
-          <div class="h-14 w-14 rounded-2xl bg-congo-yellow/10 flex items-center justify-center text-congo-yellow">
-            <mat-icon class="!text-3xl">history</mat-icon>
+
+        <div class="glass-card hover-glow p-5 flex flex-col gap-4 transition-200">
+          <div class="flex items-center justify-between">
+            <div class="h-10 w-10 rounded-lg bg-red-400/10 flex items-center justify-center text-red-400">
+              <mat-icon>gavel</mat-icon>
+            </div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">-12% vs mois dernier</div>
           </div>
           <div>
-            <div class="text-2xl font-bold text-sidebar-bg">100%</div>
-            <div class="text-xs text-text-muted font-semibold uppercase tracking-wider">Historique Immuable</div>
+            <div class="text-2xl font-bold text-white">1 093</div>
+            <div class="text-[11px] text-slate-500 font-medium">Litiges Résolus</div>
           </div>
         </div>
-        <div class="sleek-card flex items-center gap-6 animate-item">
-          <div class="h-14 w-14 rounded-2xl bg-congo-red/10 flex items-center justify-center text-congo-red">
-            <mat-icon class="!text-3xl">security</mat-icon>
+
+        <div class="glass-card hover-glow p-5 flex flex-col gap-4 transition-200">
+          <div class="flex items-center justify-between">
+            <div class="h-10 w-10 rounded-lg bg-[#10b98110] flex items-center justify-center text-[--primary]">
+              <mat-icon>link</mat-icon>
+            </div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">+2 340 cette semaine</div>
           </div>
           <div>
-            <div class="text-2xl font-bold text-sidebar-bg">Zéro</div>
-            <div class="text-xs text-text-muted font-semibold uppercase tracking-wider">Litiges de Double Vente</div>
+            <div class="text-2xl font-bold text-white">38 560</div>
+            <div class="text-[11px] text-slate-500 font-medium">Transactions Blockchain</div>
           </div>
         </div>
       </div>
 
-      <!-- Features Section -->
-      <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="sleek-card animate-item">
-          <div class="sleek-card-header">
-            <span class="sleek-card-title">Portail de Vérification</span>
-            <mat-icon class="text-congo-green">search</mat-icon>
+      <!-- Main Dashboard Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Recent Activity -->
+        <div class="lg:col-span-2 glass-card flex flex-col">
+          <div class="p-5 border-b border-[--border-subtle] flex justify-between items-center">
+            <div class="flex gap-4">
+              <button class="px-4 py-1.5 rounded-lg bg-[#10b98115] text-[--primary] text-[11px] font-bold transition-all">Activité Récente</button>
+              <button class="px-4 py-1.5 rounded-lg text-slate-500 text-[11px] font-bold hover:bg-white/5 transition-all">Blocs Blockchain</button>
+            </div>
+            <button class="text-[10px] text-[--primary] font-bold hover:underline">Voir tout</button>
           </div>
-          <p class="text-sm text-text-muted mb-6 leading-relaxed">
-            Accédez instantanément au propriétaire légal actuel et à l'historique complet des transactions d'une parcelle en entrant son identifiant unique.
-          </p>
-          <button class="sleek-btn-primary !h-10 !px-6 !text-sm" routerLink="/portal">Accéder au portail</button>
+          
+          <div class="p-0 overflow-hidden">
+            @for (item of recentActivity; track item.id) {
+              <div class="flex items-center gap-4 px-6 py-4 border-b border-[--border-subtle] last:border-0 hover:bg-white/5 transition-all group">
+                <div class="w-10 h-10 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-500 group-hover:text-[--primary] transition-colors">
+                  <mat-icon>person</mat-icon>
+                </div>
+                <div class="flex-1">
+                  <div class="text-sm font-bold text-white">{{ item.name }}</div>
+                  <div class="text-[10px] text-slate-500">{{ item.action }} • {{ item.location }}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-[10px] font-bold" [class.text-[--primary]]="item.status === 'Confirmé'" [class.text-blue-400]="item.status === 'Vérifié'" [class.text-amber-400]="item.status === 'En attente'" [class.text-red-400]="item.status === 'Litige'">
+                    {{ item.status }}
+                  </div>
+                  <div class="text-[9px] text-slate-600">il y a {{ item.time }}</div>
+                </div>
+              </div>
+            }
+          </div>
         </div>
 
-        <div class="sleek-card animate-item">
-          <div class="sleek-card-header">
-            <span class="sleek-card-title">Carte Interactive</span>
-            <mat-icon class="text-congo-yellow">explore</mat-icon>
+        <!-- Right Panels -->
+        <div class="space-y-6">
+          <!-- Quick Actions -->
+          <div class="glass-card p-5">
+            <h3 class="text-xs font-bold text-white uppercase tracking-widest mb-4">Actions Rapides</h3>
+            <div class="space-y-2">
+              <button class="w-full flex items-center justify-between p-3 rounded-lg bg-[#10b98120] border border-[#10b98140] hover:bg-[#10b98130] transition-all group" routerLink="/dashboard">
+                 <div class="flex items-center gap-3">
+                   <mat-icon class="!text-lg text-[--primary]">description</mat-icon>
+                   <span class="text-[11px] font-bold text-[--primary]">Nouvelle Parcelle</span>
+                 </div>
+                 <mat-icon class="!text-sm text-[--primary] opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</mat-icon>
+              </button>
+              <button class="w-full flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-all group" routerLink="/portal">
+                 <div class="flex items-center gap-3">
+                   <mat-icon class="!text-lg text-slate-400">search</mat-icon>
+                   <span class="text-[11px] font-bold text-white">Vérifier un Titre</span>
+                 </div>
+              </button>
+              <button class="w-full flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-all group" routerLink="/registry">
+                 <div class="flex items-center gap-3">
+                   <mat-icon class="!text-lg text-slate-400">link</mat-icon>
+                   <span class="text-[11px] font-bold text-white">Consulter le Ledger</span>
+                 </div>
+              </button>
+              <button class="w-full flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-all group" routerLink="/reports">
+                 <div class="flex items-center gap-3">
+                   <mat-icon class="!text-lg text-slate-400">analytics</mat-icon>
+                   <span class="text-[11px] font-bold text-white">Générer un Rapport</span>
+                 </div>
+              </button>
+            </div>
           </div>
-          <p class="text-sm text-text-muted mb-6 leading-relaxed">
-            Visualisez le cadastre de Brazzaville en temps réel via AfriChain solutions. Cliquez sur n'importe quelle parcelle pour voir son statut de validation et son certificat numérique.
-          </p>
-          <button class="sleek-btn-primary !h-10 !px-6 !text-sm" routerLink="/map">Voir la carte</button>
+
+          <!-- Network Health -->
+          <div class="glass-card p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xs font-bold text-white uppercase tracking-widest">Santé du Réseau</h3>
+              <div class="flex items-center gap-2">
+                <div class="h-1.5 w-1.5 rounded-full bg-[--primary]"></div>
+                <span class="text-[9px] text-[--primary] font-bold uppercase">Opérationnel</span>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-[10px] text-slate-500">Noeuds Actifs</span>
+                  <span class="text-[10px] font-mono text-white">24/24</span>
+                </div>
+                <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-[--primary] w-full"></div>
+                </div>
+              </div>
+              
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-[10px] text-slate-500">Latence Réseau</span>
+                  <span class="text-[10px] font-mono text-white">42ms</span>
+                </div>
+                <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-[--primary] w-[85%]"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-[10px] text-slate-500">Intégrité des Données</span>
+                  <span class="text-[10px] font-mono text-white">100%</span>
+                </div>
+                <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-[--primary] w-full"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
+
+      <!-- District Distribution -->
+      <div class="glass-card p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xs font-bold text-white uppercase tracking-widest">Répartition par District — Brazzaville</h3>
+          <span class="text-[10px] text-slate-500">Mise à jour en temps réel</span>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+           @for (district of districts; track district.name) {
+             <div class="space-y-3">
+               <div class="text-center">
+                 <div class="text-[14px] font-bold text-white">{{ district.count }}</div>
+                 <div class="text-[9px] text-slate-500 uppercase mb-2">{{ district.name }}</div>
+               </div>
+               <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                 <div class="h-full bg-[--primary]" [style.width]="district.percentage + '%'"></div>
+               </div>
+               <div class="text-center text-[9px] font-bold text-[--primary]">{{ district.percentage }}%</div>
+             </div>
+           }
+        </div>
+      </div>
+
     </div>
   `,
   styles: [`
     :host { display: block; }
   `]
 })
-export class Home implements AfterViewInit {
-  private platformId = inject(PLATFORM_ID);
+export class Home {
+  recentActivity = [
+    { id: 1, name: 'Jean-Baptiste Mouakala', action: 'Titre enregistré', location: 'Bacongo', status: 'Confirmé', time: '3 min' },
+    { id: 2, name: 'Marie-Claire Ngoma', action: 'Vérification effectuée', location: 'Poto-Poto', status: 'Vérifié', time: '11 min' },
+    { id: 3, name: 'Théodore Loemba', action: 'Transfert de propriété', location: 'Moungali', status: 'En attente', time: '28 min' },
+    { id: 4, name: 'Angélique Bouanga', action: 'Titre enregistré', location: 'Talangaï', status: 'Confirmé', time: '45 min' },
+    { id: 5, name: 'Prosper Kiminou', action: 'Litige signalé', location: 'Madibou', status: 'Litige', time: '1 h' },
+    { id: 6, name: 'Célestine Mabika', action: 'Titre enregistré', location: 'Djiri', status: 'Confirmé', time: '1 h 20min' },
+  ];
 
-  ngAfterViewInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      const items = document.querySelectorAll('.animate-item');
-      animate(
-        items,
-        { opacity: [0, 1], y: [20, 0] },
-        { delay: stagger(0.1), duration: 0.6, ease: "easeOut" }
-      );
-    }
-  }
+  districts = [
+    { name: 'Bacongo', count: '2,841', percentage: 85 },
+    { name: 'Poto-Poto', count: '3,102', percentage: 92 },
+    { name: 'Moungali', count: '1,987', percentage: 71 },
+    { name: 'Talangaï', count: '2,234', percentage: 78 },
+    { name: 'Madibou', count: '1,654', percentage: 63 },
+    { name: 'Djiri', count: '3,014', percentage: 88 },
+  ];
 }

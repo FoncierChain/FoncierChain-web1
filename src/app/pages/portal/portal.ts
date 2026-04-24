@@ -36,134 +36,158 @@ interface Transaction {
     MatIconModule
   ],
   template: `
-    <div class="space-y-8">
-      <!-- Search Header -->
-      <div class="sleek-card">
-        <div class="sleek-card-header !mb-6">
-          <span class="sleek-card-title">Vérification de Titre Foncier</span>
-          <div class="flex items-center gap-2 text-[10px] font-bold text-congo-green uppercase tracking-widest">
-            <span class="h-2 w-2 rounded-full bg-congo-green"></span>
-            Accès Public Ouvert
-          </div>
-        </div>
-        
-        <div class="sleek-search-container">
-          <input type="text" [(ngModel)]="searchQuery" 
-                 placeholder="Entrez l'ID de la parcelle (ex: BZV-45785-SECURE) ou l'adresse..."
-                 class="flex-1 bg-transparent border-none outline-none text-sm"
-                 (keyup.enter)="search()">
-          <button class="sleek-btn-primary h-10" (click)="search()" [disabled]="loading()">
-            @if (loading()) {
-              <mat-icon class="animate-spin !text-sm">sync</mat-icon>
-            } @else {
-              Vérifier le Titre
-            }
-          </button>
-        </div>
-        <p class="mt-4 text-[11px] text-text-muted italic">
-          * La base de données est mise à jour en temps réel par les agents certifiés de AfriChain solutions.
+    <div class="max-w-4xl mx-auto py-10 space-y-12 animate-fade-in">
+      
+      <!-- Central Search Section -->
+      <div class="text-center space-y-4 mb-10">
+        <h2 class="text-3xl font-bold text-white">Vérifiez un Titre Foncier</h2>
+        <p class="text-slate-400 max-w-xl mx-auto">
+          Entrez l’identifiant d’une parcelle pour vérifier instantanément son propriétaire légitime, son historique et son statut sur la blockchain.
         </p>
       </div>
 
-      @if (parcel()) {
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <!-- Parcel Details -->
-          <div class="lg:col-span-1 space-y-6">
-            <div class="sleek-card !bg-sidebar-bg !text-white">
-              <div class="flex justify-between items-start mb-6">
-                <div>
-                  <div class="text-[10px] font-bold text-congo-yellow uppercase tracking-widest mb-1">Certificat Numérique</div>
-                  <h2 class="text-xl font-bold">{{parcel()?.parcelId}}</h2>
-                </div>
-                <mat-icon class="text-congo-green">verified</mat-icon>
-              </div>
-
-              <div class="space-y-4">
-                <div>
-                  <span class="text-[10px] uppercase text-white/50 font-bold block mb-1">Propriétaire Actuel</span>
-                  <div class="text-lg font-semibold">{{parcel()?.currentOwner}}</div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <span class="text-[10px] uppercase text-white/50 font-bold block mb-1">Surface</span>
-                    <div class="text-sm">{{parcel()?.surface}} m²</div>
-                  </div>
-                  <div>
-                    <span class="text-[10px] uppercase text-white/50 font-bold block mb-1">Usage</span>
-                    <div class="text-sm">{{parcel()?.usage}}</div>
-                  </div>
-                </div>
-                <div>
-                  <span class="text-[10px] uppercase text-white/50 font-bold block mb-1">Adresse</span>
-                  <div class="text-sm">{{parcel()?.address}}</div>
-                </div>
-              </div>
-
-              <div class="mt-8 pt-6 border-t border-white/10">
-                <div class="text-[10px] uppercase text-white/50 font-bold mb-2">Empreinte Blockchain</div>
-                <div class="font-mono text-[10px] break-all opacity-70">{{parcel()?.hash}}</div>
-              </div>
+      <!-- Search Box (Terminal Style) -->
+      <div class="glass-card overflow-hidden">
+        <div class="bg-black/40 px-6 py-3 flex items-center justify-between border-b border-white/5">
+          <div class="flex gap-2">
+            <div class="h-3 w-3 rounded-full bg-red-500/50"></div>
+            <div class="h-3 w-3 rounded-full bg-yellow-500/50"></div>
+            <div class="h-3 w-3 rounded-full bg-green-500/50"></div>
+          </div>
+          <div class="text-[10px] font-mono text-slate-500">foncierchain-verify v2.4.1 — Accès Public</div>
+        </div>
+        
+        <div class="p-8 space-y-6">
+          <div class="flex items-center gap-2 mb-4">
+             <span class="text-[--primary] font-mono">>_</span>
+             <span class="text-xs font-medium text-slate-400">Entrez un ID de parcelle ou un hash SHA-256 pour vérifier</span>
+          </div>
+          
+          <div class="flex gap-3">
+            <div class="flex-1 relative group">
+              <input type="text" [(ngModel)]="searchQuery" 
+                     placeholder="Ex: BZV-2024-8821 ou MADIBOU-482..."
+                     class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white outline-none focus:border-[--primary] transition-all group-hover:border-white/20"
+                     (keyup.enter)="search()">
             </div>
-
-            <div class="sleek-card !bg-congo-green !text-white">
-              <div class="flex items-center gap-3 mb-2">
-                <mat-icon>security</mat-icon>
-                <span class="font-bold">Statut: {{parcel()?.status}}</span>
-              </div>
-              <p class="text-xs opacity-90">Cette parcelle a été validée numériquement et son titre est protégé contre toute modification non autorisée.</p>
-            </div>
+            <button class="bg-[--primary] hover:bg-[--primary-hover] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all shrink-0" 
+                    (click)="search()" [disabled]="loading()">
+              @if (loading()) {
+                <mat-icon class="animate-spin !text-lg">sync</mat-icon>
+              } @else {
+                <mat-icon>search</mat-icon>
+                Vérifier
+              }
+            </button>
           </div>
 
-          <!-- Transaction History -->
-          <div class="lg:col-span-2">
-            <div class="sleek-card h-full">
-              <div class="sleek-card-header">
-                <span class="sleek-card-title">Historique Immuable des Transactions</span>
-                <mat-icon class="text-text-muted">history</mat-icon>
-              </div>
+          <div class="flex flex-wrap gap-2 pt-2">
+            @for (example of ['BZV-2024-8821', 'MADIBOU-482', 'BZV-2024-8817']; track example) {
+              <button (click)="searchQuery = example; search()" 
+                      class="text-[10px] font-mono px-3 py-1.5 rounded bg-white/5 text-slate-500 hover:text-white hover:bg-white/10 transition-colors">
+                {{ example }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
 
-              <div class="overflow-x-auto">
-                <table class="sleek-data-table">
+      @if (searched() && parcel()) {
+        <!-- Search Results (Glass Layout) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+           <!-- Details -->
+           <div class="lg:col-span-1 space-y-6">
+              <div class="glass-card p-6 border-l-4 border-l-[--primary]">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-4">Certificat Actif</div>
+                <h3 class="text-xl font-bold text-white mb-6">{{ parcel()?.parcelId }}</h3>
+                
+                <div class="space-y-4">
+                  <div>
+                    <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Propriétaire</div>
+                    <div class="text-sm font-semibold text-white">{{ parcel()?.currentOwner }}</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Statut Juridique</div>
+                    <div class="text-xs text-[--primary] font-bold flex items-center gap-1">
+                      <mat-icon class="!text-xs">verified</mat-icon>
+                      {{ parcel()?.status }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+           </div>
+
+           <!-- History -->
+           <div class="lg:col-span-2 glass-card overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-white/5 flex items-center justify-between">
+                <span class="text-xs font-bold text-white uppercase tracking-widest">Preuve Blockchain</span>
+                <mat-icon class="text-slate-500">lock</mat-icon>
+              </div>
+              <div class="flex-1 overflow-x-auto">
+                <table class="w-full text-left">
                   <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Nouveau Propriétaire</th>
-                      <th>Date</th>
-                      <th>Agent</th>
-                      <th>Preuve</th>
-                    </tr>
+                     <tr class="text-[10px] text-slate-500 uppercase font-bold border-b border-white/5">
+                        <th class="px-6 py-4">Opération</th>
+                        <th class="px-6 py-4">Propriétaire</th>
+                        <th class="px-6 py-4">Date</th>
+                     </tr>
                   </thead>
                   <tbody>
                     @for (tx of history(); track tx.hash) {
-                      <tr>
-                        <td>
-                          <span class="sleek-status-badge">{{tx.type}}</span>
+                      <tr class="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors">
+                        <td class="px-6 py-4">
+                           <span class="badge badge-green text-[9px]">{{ tx.type }}</span>
                         </td>
-                        <td class="font-semibold">{{tx.newOwner}}</td>
-                        <td class="text-text-muted">{{tx.date?.toDate() | date:'shortDate'}}</td>
-                        <td class="text-xs">{{tx.agentUid?.substring(0, 8)}}...</td>
-                        <td>
-                          <mat-icon class="text-congo-green !text-sm" title="Vérifié">lock</mat-icon>
-                        </td>
-                      </tr>
-                    } @empty {
-                      <tr>
-                        <td colspan="5" class="text-center py-8 text-text-muted italic">Aucun historique disponible.</td>
+                        <td class="px-6 py-4 text-xs text-white">{{ tx.newOwner }}</td>
+                        <td class="px-6 py-4 text-[10px] text-slate-500">{{ tx.date?.toDate() | date:'shortDate' }}</td>
                       </tr>
                     }
                   </tbody>
                 </table>
               </div>
-            </div>
-          </div>
+           </div>
         </div>
-      } @else if (searched() && !loading()) {
-        <div class="sleek-card text-center py-16">
-          <mat-icon class="!text-6xl text-congo-red/20 mb-4">location_off</mat-icon>
-          <h2 class="text-xl font-bold text-sidebar-bg">Aucune parcelle trouvée</h2>
-          <p class="text-text-muted">L'identifiant ou l'adresse ne correspond à aucun enregistrement certifié.</p>
+      } @else if (searched() && !loading() && !parcel()) {
+        <div class="glass-card p-12 text-center space-y-4 border-dashed border-white/20">
+           <mat-icon class="!text-5xl text-red-400 opacity-20">search_off</mat-icon>
+           <h3 class="text-lg font-bold text-white">Référence introuvable</h3>
+           <p class="text-sm text-slate-500">Aucun titre foncier ne correspond à cet identifiant dans le ledger.</p>
         </div>
       }
+
+      <!-- Bottom Info Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-card p-6 space-y-4">
+           <div class="h-10 w-10 rounded-lg bg-[#10b98110] flex items-center justify-center text-[--primary]">
+             <mat-icon>security</mat-icon>
+           </div>
+           <h4 class="text-sm font-bold text-white">Vérification Cryptographique</h4>
+           <p class="text-xs text-slate-500 leading-relaxed">
+             Chaque titre est signé avec SHA-256 et inscrit de manière immuable sur la blockchain.
+           </p>
+        </div>
+
+        <div class="glass-card p-6 space-y-4">
+           <div class="h-10 w-10 rounded-lg bg-[#10b98110] flex items-center justify-center text-[--primary]">
+             <mat-icon>schedule</mat-icon>
+           </div>
+           <h4 class="text-sm font-bold text-white">Résultat Instantané</h4>
+           <p class="text-xs text-slate-500 leading-relaxed">
+             La vérification s’effectue en moins de 2 secondes grâce à notre réseau de 24 nœuds.
+           </p>
+        </div>
+
+        <div class="glass-card p-6 space-y-4">
+           <div class="h-10 w-10 rounded-lg bg-[#10b98110] flex items-center justify-center text-[--primary]">
+             <mat-icon>public</mat-icon>
+           </div>
+           <h4 class="text-sm font-bold text-white">Accès Public</h4>
+           <p class="text-xs text-slate-500 leading-relaxed">
+             Tout citoyen peut vérifier la légitimité d’un titre foncier sans inscription préalable.
+           </p>
+        </div>
+      </div>
+
     </div>
   `,
   styles: [`

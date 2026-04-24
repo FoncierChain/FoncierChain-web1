@@ -17,6 +17,22 @@ export const routes: Routes = [
     path: 'map',
     loadComponent: () => import('./pages/map/map-view').then(m => m.MapView)
   },
+  { 
+    path: 'parcels', 
+    loadComponent: () => import('./pages/home/home').then(m => m.Home)
+  },
+  { 
+    path: 'registry', 
+    loadComponent: () => import('./pages/portal/portal').then(m => m.Portal)
+  },
+  { 
+    path: 'reports', 
+    loadComponent: () => import('./pages/home/home').then(m => m.Home)
+  },
+  { 
+    path: 'settings', 
+    loadComponent: () => import('./pages/home/home').then(m => m.Home)
+  },
   {
     path: '**',
     redirectTo: ''
