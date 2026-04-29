@@ -10,6 +10,7 @@ import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {doc, setDoc, collection, addDoc, serverTimestamp} from 'firebase/firestore';
 import {db, auth} from '../../firebase';
 import {signInWithPopup, GoogleAuthProvider, User} from 'firebase/auth';
+import {FancierChain, AuthPayload} from '../../services/fancier-chain';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,7 +30,7 @@ import {signInWithPopup, GoogleAuthProvider, User} from 'firebase/auth';
   template: `
     <div class="animate-fade-in">
       @if (!user()) {
-        <!-- Agent Login Screen (Image 1) -->
+        <!-- Agent Login Screen -->
         <div class="min-h-[80vh] flex items-center justify-center py-12 px-4">
           <div class="glass-card max-w-md w-full overflow-hidden shadow-2xl">
             <div class="bg-black/40 px-6 py-4 flex items-center justify-between border-b border-white/5">
@@ -82,15 +83,27 @@ import {signInWithPopup, GoogleAuthProvider, User} from 'firebase/auth';
               </div>
 
             <div class="space-y-4 pt-4">
-                <button class="w-full bg-[--primary] hover:bg-[--primary-hover] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.2)]" 
-                        (click)="login()" [disabled]="loading()">
-                   @if (loading()) {
-                     <mat-icon class="animate-spin !text-lg">sync</mat-icon>
-                   } @else {
-                     <mat-icon>login</mat-icon>
-                     Se connecter avec Google
-                   }
-                </button>
+                @if (adminId() && adminPass()) {
+                  <button class="w-full bg-[--primary] hover:bg-[--primary-hover] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.2)]" 
+                          (click)="apiLogin()" [disabled]="loading()">
+                     @if (loading()) {
+                       <mat-icon class="animate-spin !text-lg">sync</mat-icon>
+                     } @else {
+                       <mat-icon>vpn_key</mat-icon>
+                       SE CONNECTER AU BACKEND
+                     }
+                  </button>
+                } @else {
+                  <button class="w-full bg-white/10 hover:bg-white/20 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-all" 
+                          (click)="login()" [disabled]="loading()">
+                     @if (loading()) {
+                       <mat-icon class="animate-spin !text-lg">sync</mat-icon>
+                     } @else {
+                       <mat-icon>login</mat-icon>
+                       Se connecter avec Google
+                     }
+                  </button>
+                }
                 <button class="w-full bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all border border-white/10" 
                         (click)="demoLogin()" [disabled]="loading()">
                    <mat-icon class="!text-sm">verified</mat-icon>
@@ -242,6 +255,7 @@ import {signInWithPopup, GoogleAuthProvider, User} from 'firebase/auth';
 export class Dashboard {
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private fancierChain = inject(FancierChain);
 
   user = signal<User | null>(null);
   loading = signal(false);
@@ -264,11 +278,50 @@ export class Dashboard {
       this.updateHash(val);
     });
 
-    auth.onAuthStateChanged((u: User | null) => this.user.set(u));
+    auth.onAuthStateChanged((u: User | null) => {
+      this.user.set(u);
+    });
+
+    // Also check for local token if not logged in via Firebase
+    const token = localStorage.getItem('fancier_token');
+    const savedUser = localStorage.getItem('fancier_user');
+    if (token && savedUser && !this.user()) {
+      this.user.set(JSON.parse(savedUser));
+    }
   }
 
   adminId = signal('');
   adminPass = signal('');
+
+  async apiLogin() {
+    if (!this.adminId() || !this.adminPass()) return;
+    this.loading.set(true);
+
+    const payload: AuthPayload = {
+      username: this.adminId(),
+      password: this.adminPass()
+    };
+
+    this.fancierChain.loginUser(payload).subscribe({
+      next: (res) => {
+        localStorage.setItem('fancier_token', res.token);
+        const userObj = {
+          uid: this.adminId(),
+          displayName: `Agent ${this.adminId()}`,
+          email: `${this.adminId()}@fancierchain.local`
+        };
+        localStorage.setItem('fancier_user', JSON.stringify(userObj));
+        this.user.set(userObj as unknown as User);
+        this.snackBar.open("Connecté avec succès au Backend FancierChain", "Fermer", { duration: 3000 });
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error("API Login error:", err);
+        this.snackBar.open("Échec de connexion au Backend. Vérifiez vos identifiants ou si l'API est active sur http://localhost:8000/", "Fermer", { duration: 5000 });
+        this.loading.set(false);
+      }
+    });
+  }
 
   async login() {
     this.loading.set(true);
@@ -303,6 +356,9 @@ export class Dashboard {
 
   logout() {
     auth.signOut();
+    localStorage.removeItem('fancier_token');
+    localStorage.removeItem('fancier_user');
+    this.user.set(null);
   }
 
   async updateHash(val: Record<string, unknown>) {

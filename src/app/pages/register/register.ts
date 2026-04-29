@@ -11,6 +11,7 @@ import {doc, setDoc, collection, addDoc, serverTimestamp} from 'firebase/firesto
 import {db, auth} from '../../firebase';
 import {User, signInWithPopup, GoogleAuthProvider} from 'firebase/auth';
 import {Router, RouterLink} from '@angular/router';
+import {FancierChain, LandRecord} from '../../services/fancier-chain';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,24 +54,20 @@ import {Router, RouterLink} from '@angular/router';
         <div class="space-y-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div class="space-y-1">
-              <div class="text-[10px] font-bold text-[--primary] uppercase tracking-widest">Opération de Cadastre</div>
+              <div class="text-[10px] font-bold text-[--primary] uppercase tracking-widest">Opération de Cadastre (Brazzaville)</div>
               <h2 class="text-3xl font-bold text-white tracking-tight">Nouvel Enregistrement</h2>
-              <p class="text-sm text-slate-500">Insertion d'une nouvelle parcelle dans le ledger national immuable.</p>
+              <p class="text-sm text-slate-500">Insertion d'une nouvelle parcelle dans le ledger Hyperledger Fabric.</p>
             </div>
             
             <div class="flex gap-3 w-full md:w-auto">
-               <button class="flex-1 md:flex-none px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-                 <mat-icon class="!text-sm">save</mat-icon>
-                 Brouillon
-               </button>
                <button class="flex-1 md:flex-none bg-[--primary] hover:bg-[--primary-hover] text-white px-8 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-2xl shadow-[--primary]/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                        (click)="onSubmit()" [disabled]="parcelForm.invalid || loading()">
                  @if (loading()) {
                    <mat-icon class="animate-spin !text-sm">sync</mat-icon>
-                   Blockchain en cours...
+                   Démarrage Etape 1...
                  } @else {
-                   <mat-icon class="!text-sm">publish</mat-icon>
-                   PUBLIER SUR LE LEDGER
+                   <mat-icon class="!text-sm">add_task</mat-icon>
+                   INITIER LE DRAFT (ETAPE 1)
                  }
                </button>
             </div>
@@ -85,45 +82,47 @@ import {Router, RouterLink} from '@angular/router';
                   <div class="space-y-6">
                     <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-3">
                       <span class="h-6 w-6 rounded-lg bg-[--primary]/10 flex items-center justify-center text-[--primary] text-[10px]">1</span>
-                      Détails de la Propriété
+                      Identification de la Parcelle
                     </h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div class="space-y-2">
-                        <label for="reg-parcelId" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ID Parcelle (Format National)</label>
-                        <input id="reg-parcelId" formControlName="parcelId" placeholder="ex: BZV-45785-A"
-                               class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white text-sm outline-none focus:border-[--primary] transition-all placeholder:text-slate-700">
+                        <label for="reg-parcelId" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ID Unique (ex: bz-456)</label>
+                        <input id="reg-parcelId" formControlName="parcelId" placeholder="ex: bz-456"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all placeholder:text-slate-700">
                       </div>
 
                       <div class="space-y-2">
-                        <label for="reg-usage" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Type d'Usage</label>
-                        <mat-select id="reg-usage" formControlName="usage" class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white text-sm outline-none focus:border-[--primary] transition-all">
-                          <mat-option value="Residential">Résidentiel</mat-option>
-                          <mat-option value="Commercial">Commercial</mat-option>
-                          <mat-option value="Industrial">Industriel</mat-option>
-                          <mat-option value="Agricultural">Agricole</mat-option>
-                        </mat-select>
+                        <label for="reg-cadastralId" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Réf. Cadastrale Nationale</label>
+                        <input id="reg-cadastralId" formControlName="cadastralId" placeholder="ex: REF-CONGO-1234"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
                       </div>
 
-                      <div class="md:col-span-2 space-y-2">
-                        <label for="reg-address" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Adresse Complète</label>
-                        <input id="reg-address" formControlName="address" placeholder="ex: Quartier Moungali, Rue de la Paix, Brazzaville"
-                               class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                      <div class="space-y-2">
+                        <label for="reg-city" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Ville</label>
+                        <input id="reg-city" formControlName="city"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
+                      </div>
+
+                      <div class="space-y-2">
+                        <label for="reg-neighborhood" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Quartier / Arrondissement</label>
+                        <input id="reg-neighborhood" formControlName="neighborhood" placeholder="ex: Poto-Poto"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
                       </div>
 
                       <div class="space-y-2">
                         <label for="reg-surface" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Surface (m²)</label>
                         <div class="relative">
                           <input id="reg-surface" type="number" formControlName="surface"
-                                 class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white text-sm outline-none focus:border-[--primary] transition-all">
-                          <span class="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 text-[10px] font-bold">M²</span>
+                                 class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
+                          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 text-[9px] font-bold">M²</span>
                         </div>
                       </div>
 
                       <div class="space-y-2">
-                        <label for="reg-coordinates" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Coordonnées GPS</label>
-                        <input id="reg-coordinates" formControlName="coordinates" placeholder="Lat, Lng (ex: -4.26, 15.28)"
-                               class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                        <label for="reg-price" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Valeur Estimée (XAF)</label>
+                        <input id="reg-price" type="number" formControlName="price"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
                       </div>
                     </div>
                   </div>
@@ -131,19 +130,39 @@ import {Router, RouterLink} from '@angular/router';
                   <div class="space-y-6 pt-4 border-t border-white/5">
                     <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-3">
                       <span class="h-6 w-6 rounded-lg bg-[--primary]/10 flex items-center justify-center text-[--primary] text-[10px]">2</span>
-                      Identification du Titulaire
+                      Signatures Assermentées (Blockchain)
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                      <div class="space-y-2">
+                        <label for="reg-sig1" class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Agent Foncier (V1)</label>
+                        <input id="reg-sig1" formControlName="signatureV1" placeholder="Signature ID"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
+                      </div>
+                      <div class="space-y-2">
+                        <label for="reg-sig2" class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Géomètre Agréé (V2)</label>
+                        <input id="reg-sig2" formControlName="signatureV2" placeholder="Signature ID"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
+                      </div>
+                      <div class="space-y-2">
+                        <label for="reg-sig3" class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Représentant Local (V3)</label>
+                        <input id="reg-sig3" formControlName="signatureV3" placeholder="Signature ID"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="space-y-6 pt-4 border-t border-white/5">
+                    <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-3">
+                      <span class="h-6 w-6 rounded-lg bg-[--primary]/10 flex items-center justify-center text-[--primary] text-[10px]">3</span>
+                      Titulaire du Droit Foncier
                     </h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                       <div class="space-y-2">
-                        <label for="reg-currentOwner" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Nom Complet</label>
-                        <input id="reg-currentOwner" formControlName="currentOwner" placeholder="Mme/M. Nom Prénom"
-                               class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white text-sm outline-none focus:border-[--primary] transition-all">
-                      </div>
-                      <div class="space-y-2">
-                        <label for="reg-ownerId" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">N° Pièce d'Identité (CNI/Passport)</label>
-                        <input id="reg-ownerId" formControlName="ownerId" placeholder="ex: 19850101-XXXX-X"
-                               class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white text-sm outline-none focus:border-[--primary] transition-all">
+                        <label for="reg-currentOwner" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Identité Souveraine (ID)</label>
+                        <input id="reg-currentOwner" formControlName="currentOwner" placeholder="Sovereign_Identity_ID"
+                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
                       </div>
                     </div>
                   </div>
@@ -154,43 +173,32 @@ import {Router, RouterLink} from '@angular/router';
             <!-- Stats/Security Info -->
             <div class="space-y-6">
               <div class="glass-card p-6 border-l-4 border-l-[--primary]">
-                <h3 class="text-xs font-bold text-white uppercase tracking-widest mb-6">Validation Blockchain</h3>
+                <h3 class="text-xs font-bold text-white uppercase tracking-widest mb-6">Empreinte Numérique</h3>
                 <div class="space-y-6">
                   <div class="space-y-2">
-                    <div class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Empreinte (Hash)</div>
+                    <div class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Document Hash (SHA-256)</div>
                     <div class="p-4 bg-black/40 border border-white/5 rounded-xl font-mono text-[9px] break-all text-slate-400">
-                      {{ generatedHash() || 'Requiert parcelId & coordonnées...' }}
+                      {{ generatedHash() || 'Génération automatique...' }}
                     </div>
                   </div>
                   
-                  <div class="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                     <div class="h-10 w-10 rounded-xl bg-[--primary]/10 flex items-center justify-center text-[--primary]">
-                       <mat-icon>verified</mat-icon>
-                     </div>
-                     <div>
-                       <div class="text-[9px] text-slate-500 uppercase font-bold">Signature Agent</div>
-                       <div class="text-[11px] text-white font-bold">{{ user()?.displayName }}</div>
-                     </div>
-                  </div>
-
-                  <div class="p-4 rounded-xl border border-dashed border-white/10">
-                    <p class="text-[10px] text-slate-500 leading-relaxed italic">
-                      "Toute saisie sur FoncierChain est définitive et consultable publiquement. Assurez-vous de l'authenticité des documents physiques présentés."
-                    </p>
+                  <div class="p-4 rounded-xl bg-[--primary]/5 border border-[--primary]/10 text-center">
+                    <div class="text-[9px] text-[--primary] uppercase font-bold mb-1">Architecture Blockchain</div>
+                    <div class="text-[11px] text-white font-bold">Hyperledger Fabric + MySQL</div>
                   </div>
                 </div>
               </div>
 
               <div class="glass-card p-8">
-                 <h3 class="text-[10px] font-bold text-white uppercase tracking-widest mb-4">Aide à l'enregistrement</h3>
+                 <h3 class="text-[10px] font-bold text-white uppercase tracking-widest mb-4">Contraintes Critiques</h3>
                  <div class="space-y-4">
                     <div class="flex items-start gap-3">
-                       <mat-icon class="!text-sm text-slate-500">info</mat-icon>
-                       <p class="text-[10px] text-slate-400 leading-tight">L'ID Parcelle doit être unique au niveau national.</p>
+                       <mat-icon class="!text-sm text-[--primary]">check_circle</mat-icon>
+                       <p class="text-[10px] text-slate-400 leading-tight">Trois signatures obligatoires pour le minting.</p>
                     </div>
                     <div class="flex items-start gap-3">
-                       <mat-icon class="!text-sm text-slate-500">info</mat-icon>
-                       <p class="text-[10px] text-slate-400 leading-tight">Les coordonnées GPS sont utilisées pour la vérification croisée SIG.</p>
+                       <mat-icon class="!text-sm text-[--primary]">check_circle</mat-icon>
+                       <p class="text-[10px] text-slate-400 leading-tight">Période de latence consensus : 2-3 secondes.</p>
                     </div>
                  </div>
               </div>
@@ -208,6 +216,7 @@ export class RegisterParcel implements OnInit {
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
+  private fancierChain = inject(FancierChain);
 
   user = signal<User | null>(null);
   loading = signal(false);
@@ -217,12 +226,15 @@ export class RegisterParcel implements OnInit {
   constructor() {
     this.parcelForm = this.fb.group({
       parcelId: ['', [Validators.required]],
-      usage: ['Residential', [Validators.required]],
-      address: ['', [Validators.required]],
+      cadastralId: ['', [Validators.required]],
+      city: ['Brazzaville', [Validators.required]],
+      neighborhood: ['', [Validators.required]],
       surface: [null, [Validators.required, Validators.min(1)]],
-      coordinates: ['', [Validators.required]],
+      price: [null, [Validators.required, Validators.min(0)]],
       currentOwner: ['', [Validators.required]],
-      ownerId: ['', [Validators.required]]
+      signatureV1: ['', [Validators.required]],
+      signatureV2: ['', [Validators.required]],
+      signatureV3: ['', [Validators.required]]
     });
 
     this.parcelForm.valueChanges.subscribe(val => {
@@ -260,11 +272,16 @@ export class RegisterParcel implements OnInit {
   }
 
   async updateHash(val: Record<string, unknown>) {
-    if (!val['parcelId'] || !val['coordinates']) {
+    const parcelId = val['parcelId'] as string;
+    const cadastralId = val['cadastralId'] as string;
+    const currentOwner = val['currentOwner'] as string;
+    const surface = val['surface'] as number;
+
+    if (!parcelId || !cadastralId) {
       this.generatedHash.set('');
       return;
     }
-    const data = `${val['parcelId']}-${val['coordinates']}-${val['currentOwner']}-${val['surface']}`;
+    const data = `${parcelId}-${cadastralId}-${currentOwner}-${surface}`;
     const msgUint8 = new TextEncoder().encode(data);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -276,37 +293,63 @@ export class RegisterParcel implements OnInit {
     this.loading.set(true);
 
     try {
-      const formVal = this.parcelForm.value;
-      const parcelId = formVal.parcelId.trim();
+      const formVal = this.parcelForm.getRawValue();
       
-      const parcelData = {
-        ...formVal,
-        parcelId,
-        hash: this.generatedHash(),
-        agentUid: this.user()?.uid || 'demo-agent',
-        status: 'Sécurisé',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+      const payload: Partial<LandRecord> = {
+        id: formVal.parcelId,
+        owner: formVal.currentOwner,
+        city: formVal.city,
+        neighborhood: formVal.neighborhood,
+        cadastralId: formVal.cadastralId,
+        area: formVal.surface,
+        price: formVal.price,
+        signatureV2: formVal.signatureV2, // Géomètre (V2) is Step 1 Actor
+        documentHash: this.generatedHash()
       };
 
-      await setDoc(doc(db, 'parcels', parcelId), parcelData);
-      
-      await addDoc(collection(db, `parcels/${parcelId}/history`), {
-        parcelId,
-        newOwner: formVal.currentOwner,
-        date: serverTimestamp(),
-        type: 'INITIAL REGISTRATION',
-        hash: this.generatedHash(),
-        agentUid: this.user()?.uid || 'demo-agent'
-      });
+      // Step 1: Initiate Draft
+      this.fancierChain.initiateDraft(payload).subscribe({
+        next: async (res) => {
+          const parcelId = formVal.parcelId;
+          const firebaseData = {
+            ...formVal,
+            blockchainTxId: res.txId,
+            assetId: res.assetId,
+            hash: payload.documentHash,
+            agentUid: this.user()?.uid || 'demo-agent',
+            status: 'DRAFT',
+            workflowStep: 1,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          };
 
-      this.snackBar.open('Parcelle enregistrée avec succès ! Redirection...', 'Fermer', { duration: 3000 });
-      this.router.navigate(['/portal'], { queryParams: { id: parcelId } });
+          await setDoc(doc(db, 'parcels', parcelId), firebaseData);
+          
+          await addDoc(collection(db, `parcels/${parcelId}/history`), {
+            parcelId,
+            newOwner: formVal.currentOwner,
+            date: serverTimestamp(),
+            type: 'DRAFT_INITIATION',
+            hash: payload.documentHash,
+            txId: res.txId,
+            agentUid: this.user()?.uid || 'demo-agent'
+          });
+
+          this.snackBar.open('Etape 1 complétée : Draft Initié sur la Blockchain', 'Fermer', { duration: 5000 });
+          this.router.navigate(['/portal'], { queryParams: { id: parcelId } });
+        },
+        error: (err) => {
+          console.error("API Error:", err);
+          this.snackBar.open("Échec du Backend API (Etape 1). Vérifiez vos accès ABAC.", 'Fermer', { duration: 8000 });
+          this.loading.set(false);
+        }
+      });
+      
     } catch (error: unknown) {
       console.error("Submit error:", error);
-      this.snackBar.open("Échec de l'enregistrement. Vérifiez vos permissions.", 'Fermer', { duration: 5000 });
-    } finally {
+      this.snackBar.open("Échec de l'opération.", 'Fermer', { duration: 5000 });
       this.loading.set(false);
     }
   }
 }
+
