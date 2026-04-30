@@ -4,8 +4,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {FormsModule} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
-import {collection, getDocs, QueryDocumentSnapshot} from 'firebase/firestore';
-import {db} from '../../firebase';
+import {FancierChain} from '../../services/fancier-chain';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const L: any;
@@ -20,6 +19,7 @@ interface ParcelData {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   coordinates: any;
   status?: string;
+  workflowStep?: number;
 }
 
 @Component({
@@ -36,7 +36,7 @@ interface ParcelData {
           
           <!-- Header -->
           <div class="flex items-center gap-3">
-             <button routerLink="/parcels" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+             <button routerLink="/home" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                <mat-icon class="!text-sm">arrow_back</mat-icon>
              </button>
              <div>
@@ -48,79 +48,57 @@ interface ParcelData {
           <!-- Stats Grid -->
           <div class="grid grid-cols-2 gap-3">
             <div class="p-4 bg-white/5 border border-white/5 rounded-xl">
-               <div class="text-[9px] text-slate-500 uppercase font-bold mb-1">Parcelles</div>
-               <div class="text-xl font-bold">12</div>
+               <div class="text-[9px] text-slate-500 uppercase font-bold mb-1">Total</div>
+               <div class="text-xl font-bold">{{ stats()?.total_parcels || 0 }}</div>
             </div>
             <div class="p-4 bg-[#10b98110] border border-[#10b98120] rounded-xl">
-               <div class="text-[9px] text-[--primary] uppercase font-bold mb-1">Confirmées</div>
-               <div class="text-xl font-bold text-[--primary]">9</div>
+               <div class="text-[9px] text-[--primary] uppercase font-bold mb-1">Finalisés</div>
+               <div class="text-xl font-bold text-[--primary]">{{ stats()?.finalized_parcels || 0 }}</div>
             </div>
-            <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-               <div class="text-[9px] text-red-400 uppercase font-bold mb-1">Litiges</div>
-               <div class="text-xl font-bold text-red-400">2</div>
+            <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+               <div class="text-[9px] text-blue-400 uppercase font-bold mb-1">En cours</div>
+               <div class="text-xl font-bold text-blue-400">{{ stats()?.draft_parcels || 0 }}</div>
             </div>
             <div class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-               <div class="text-[9px] text-amber-400 uppercase font-bold mb-1">En Attente</div>
-               <div class="text-xl font-bold text-amber-400">1</div>
+               <div class="text-[9px] text-amber-400 uppercase font-bold mb-1">Validés</div>
+               <div class="text-xl font-bold text-amber-400">{{ stats()?.validated_parcels || 0 }}</div>
             </div>
           </div>
 
           <!-- Filters -->
           <div class="space-y-4">
-            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Filtres</div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Recherche & Filtres</div>
             
-            <div class="space-y-2">
-              <label for="district-select" class="text-[9px] text-slate-500 uppercase font-medium">District</label>
-              <select id="district-select" [(ngModel)]="filterDistrict" (change)="applyFilters()" 
-                      class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:border-[--primary] transition-all">
-                <option value="Tous">Tous</option>
-                <option value="Bacongo">Bacongo</option>
-                <option value="Poto-Poto">Poto-Poto</option>
-                <option value="Moungali">Moungali</option>
-                <option value="Talangaï">Talangaï</option>
-              </select>
+            <div class="relative">
+              <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 !text-xs text-slate-500">search</mat-icon>
+              <input type="text" placeholder="Rechercher par ID ou adresse..." (input)="onSearch($event)"
+                     class="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-xs outline-none focus:border-[--primary] transition-all">
             </div>
 
             <div class="space-y-2">
-              <label for="type-select" class="text-[9px] text-slate-500 uppercase font-medium">Type</label>
+              <label for="type-select" class="text-[9px] text-slate-500 uppercase font-medium">Usage du sol</label>
               <select id="type-select" [(ngModel)]="filterType" (change)="applyFilters()"
                       class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:border-[--primary] transition-all">
-                <option value="Tous">Tous</option>
+                <option value="Tous">Tous les usages</option>
                 <option value="Résidentiel">Résidentiel</option>
                 <option value="Commercial">Commercial</option>
-                <option value="Mixte">Mixte</option>
+                <option value="Agricole">Agricole</option>
               </select>
-            </div>
-
-            <div class="space-y-2">
-              <div class="text-[9px] text-slate-500 uppercase font-medium">Statut</div>
-              <div class="flex flex-wrap gap-2">
-                 @for (s of ['Tous', 'Confirmé', 'Litige', 'En Attente']; track s) {
-                   <button (click)="filterStatus = s; applyFilters()" 
-                           [class.bg-[--primary]]="filterStatus === s"
-                           [class.text-white]="filterStatus === s"
-                           [class.bg-white/5]="filterStatus !== s"
-                           [class.text-slate-400]="filterStatus !== s"
-                           class="px-3 py-1 rounded-full text-[9px] font-bold transition-all border border-white/5">
-                     {{ s }}
-                   </button>
-                 }
-              </div>
             </div>
           </div>
 
           <!-- Legend -->
           <div class="space-y-3 pt-4 border-t border-white/5">
-            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Légende</div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Immuabilité (Légende)</div>
             <div class="space-y-2">
               <div class="flex items-center gap-2 text-[10px] text-slate-400">
-                <div class="w-2 h-2 rounded-full bg-[--primary]"></div> Confirmé
+                <div class="w-2 h-2 rounded-full bg-[--primary]"></div> Titre Foncier Finalisé
               </div>
               <div class="flex items-center gap-2 text-[10px] text-slate-400">
-                <div class="w-2 h-2 rounded-full bg-red-400"></div> Litige
+                <div class="w-2 h-2 rounded-full bg-blue-400"></div> Draft (Inscription)
               </div>
               <div class="flex items-center gap-2 text-[10px] text-slate-400">
-                <div class="w-2 h-2 rounded-full bg-amber-400"></div> En Attente
+                <div class="w-2 h-2 rounded-full bg-amber-400"></div> Validation Communautaire
               </div>
             </div>
           </div>
@@ -128,11 +106,11 @@ interface ParcelData {
           <!-- List -->
           <div class="space-y-4 pt-4 border-t border-white/5">
              <div class="flex justify-between items-center">
-               <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Liste des Parcelles ({{ filteredParcels().length }})</div>
+               <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Résultats ({{ filteredParcels().length }})</div>
                <mat-icon class="!text-sm text-slate-500">list</mat-icon>
              </div>
              
-             <div class="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+             <div class="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar text-white">
                 @for (p of filteredParcels(); track p.parcelId) {
                   <button (click)="selectParcel(p)" 
                           [class.border-[--primary]]="selectedParcel()?.parcelId === p.parcelId"
@@ -140,7 +118,10 @@ interface ParcelData {
                           class="w-full p-3 rounded-xl border border-white/5 text-left hover:bg-white/5 transition-all group">
                     <div class="flex justify-between items-start mb-1">
                       <div class="text-[10px] font-bold text-white group-hover:text-[--primary]">{{ p.parcelId }}</div>
-                      <div class="h-1.5 w-1.5 rounded-full" [class.bg-[--primary]]="p.status === 'Sécurisé'" [class.bg-red-500]="p.status === 'Litige'" [class.bg-amber-500]="p.status === 'En attente'"></div>
+                      <div class="h-1.5 w-1.5 rounded-full" 
+                           [class.bg-[--primary]]="p.status === 'FINALIZED'" 
+                           [class.bg-blue-500]="p.status === 'DRAFT'" 
+                           [class.bg-amber-500]="p.status === 'COMMUNITY_VALIDATED'"></div>
                     </div>
                     <div class="text-[9px] text-slate-500">{{ p.address }} — {{ p.surface }} m²</div>
                   </button>
@@ -160,7 +141,7 @@ interface ParcelData {
            <div class="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 pointer-events-auto">
              <div class="flex items-center gap-2">
                <div class="h-1.5 w-1.5 rounded-full bg-[--primary] animate-pulse"></div>
-               <span class="text-[9px] font-bold text-white uppercase tracking-widest">Mainnet Opérationnel</span>
+               <span class="text-[9px] font-bold text-white uppercase tracking-widest">SIG Hyperledger Fabric On-chain</span>
              </div>
            </div>
            
@@ -178,7 +159,7 @@ interface ParcelData {
                   <mat-icon class="!text-sm">close</mat-icon>
                 </button>
                 
-                <div class="text-[9px] font-bold text-[--primary] uppercase tracking-widest mb-2">Parcelle Sélectionnée</div>
+                <div class="text-[9px] font-bold text-[--primary] uppercase tracking-widest mb-2">Détails de la Parcelle</div>
                 <h3 class="text-lg font-bold text-white mb-4">{{ selectedParcel()?.parcelId }}</h3>
                 
                 <div class="grid grid-cols-2 gap-4 mb-6">
@@ -198,7 +179,7 @@ interface ParcelData {
 
                 <div class="p-3 bg-black/40 border border-white/5 rounded-xl mb-4">
                   <div class="text-[8px] font-mono text-slate-500 break-all leading-tight">
-                    {{ selectedParcel()?.hash }}
+                    Merkle Root: {{ selectedParcel()?.hash }}
                   </div>
                 </div>
 
@@ -223,6 +204,7 @@ interface ParcelData {
 })
 export class MapView implements AfterViewInit {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
+  private fancierChain = inject(FancierChain);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   map: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -231,20 +213,22 @@ export class MapView implements AfterViewInit {
   selectedParcel = signal<ParcelData | null>(null);
   parcels = signal<ParcelData[]>([]);
   filteredParcels = signal<ParcelData[]>([]);
+  stats = signal<any>(null);
 
-  filterDistrict = 'Tous';
   filterType = 'Tous';
-  filterStatus = 'Tous';
-
   private platformId = inject(PLATFORM_ID);
-
   private router = inject(Router);
 
-  ngAfterViewInit() {
+  async ngAfterViewInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.initMap();
-      this.loadParcels();
+      await this.loadStats();
+      await this.loadParcels();
     }
+  }
+
+  async loadStats() {
+    this.stats.set(await this.fancierChain.getDashboardStats());
   }
 
   initMap() {
@@ -260,69 +244,45 @@ export class MapView implements AfterViewInit {
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
   }
 
-  async loadParcels() {
+  async loadParcels(search?: string) {
     try {
-      const querySnapshot = await getDocs(collection(db, 'parcels'));
-      let parcelData = querySnapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as ParcelData);
-      
-      if (parcelData.length === 0) {
-        parcelData = this.getMockParcels();
+      const results = await this.fancierChain.getMapData();
+      let data = results.map((r: any) => ({
+        parcelId: r.parcelId,
+        address: r.address,
+        currentOwner: r.currentOwner,
+        surface: r.surface,
+        usage: r.usage,
+        hash: r.hash,
+        coordinates: r.coordinates,
+        status: r.status,
+        workflowStep: r.workflowStep
+      } as ParcelData));
+
+      if (search) {
+        const searchTerm = search.toLowerCase();
+        data = data.filter(p => 
+          p.parcelId.toLowerCase().includes(searchTerm) || 
+          p.address.toLowerCase().includes(searchTerm)
+        );
       }
       
-      this.parcels.set(parcelData);
+      this.parcels.set(data);
       this.applyFilters();
     } catch (error) {
       console.error("Error loading parcels:", error);
-      const mocks = this.getMockParcels();
-      this.parcels.set(mocks);
-      this.applyFilters();
     }
   }
 
-  getMockParcels(): ParcelData[] {
-    return [
-      {
-        parcelId: 'BZV-2024-8821',
-        address: 'Bacongo, Rue 12',
-        currentOwner: 'Jean-Baptiste Mouakala',
-        surface: 420,
-        usage: 'Résidentiel',
-        hash: '0x9f8b...3c2a1',
-        coordinates: [[-4.275, 15.280], [-4.275, 15.285], [-4.280, 15.285], [-4.280, 15.280]],
-        status: 'Sécurisé'
-      },
-      {
-        parcelId: 'MADIBOU-482',
-        address: 'Madibou, Secteur 4',
-        currentOwner: 'Prosper Kiminou',
-        surface: 680,
-        usage: 'Mixte',
-        hash: '0x1a2b...f2e1c',
-        coordinates: [[-4.285, 15.275], [-4.285, 15.280], [-4.290, 15.280], [-4.290, 15.275]],
-        status: 'Litige'
-      },
-      {
-        parcelId: 'TAL-9941',
-        address: 'Talangaï, Avenue de la Paix',
-        currentOwner: 'Marie-Claire Ngoma',
-        surface: 550,
-        usage: 'Commercial',
-        hash: '0x7d8e...z6a7b',
-        coordinates: [[-4.240, 15.295], [-4.240, 15.300], [-4.245, 15.300], [-4.245, 15.295]],
-        status: 'En attente'
-      }
-    ];
+  onSearch(event: any) {
+    const term = event.target.value;
+    this.loadParcels(term);
   }
 
   applyFilters() {
     const filtered = this.parcels().filter(p => {
-      const matchDistrict = this.filterDistrict === 'Tous' || p.address.includes(this.filterDistrict);
       const matchType = this.filterType === 'Tous' || p.usage === this.filterType;
-      const matchStatus = this.filterStatus === 'Tous' || 
-                        (this.filterStatus === 'Confirmé' && p.status === 'Sécurisé') ||
-                        (this.filterStatus === 'Litige' && p.status === 'Litige') ||
-                        (this.filterStatus === 'En Attente' && p.status === 'En attente');
-      return matchDistrict && matchType && matchStatus;
+      return matchType;
     });
     
     this.filteredParcels.set(filtered);
@@ -330,22 +290,21 @@ export class MapView implements AfterViewInit {
   }
 
   renderParcels() {
-    // Clear previous layers
     this.layers.forEach(layer => this.map.removeLayer(layer));
     this.layers = [];
 
     this.filteredParcels().forEach(parcel => {
       if (parcel.coordinates && parcel.coordinates.length >= 3) {
-        let color = '#10b981'; // Confirmé
-        if (parcel.status === 'Litige') color = '#ef4444';
-        if (parcel.status === 'En attente') color = '#f59e0b';
+        let color = '#10b981'; // FINALIZED
+        if (parcel.status === 'DRAFT') color = '#60a5fa';
+        if (parcel.status === 'COMMUNITY_VALIDATED') color = '#f59e0b';
         
         const polygon = L.polygon(parcel.coordinates, {
           color: color,
           fillColor: color,
           fillOpacity: 0.3,
           weight: 1.5,
-          className: 'parcel-polygon'
+          className: 'parcel-polygon cursor-pointer'
         }).addTo(this.map);
 
         polygon.on('click', () => {
@@ -358,7 +317,7 @@ export class MapView implements AfterViewInit {
 
     if (this.layers.length > 0) {
       const group = L.featureGroup(this.layers);
-      this.map.fitBounds(group.getBounds(), { padding: [20, 20] });
+      this.map.fitBounds(group.getBounds(), { padding: [40, 40] });
     }
   }
 

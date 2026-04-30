@@ -1,6 +1,6 @@
 {
-  "name": "FoncierChain",
-  "description": "Projet FoncierChain (CG-01) - Équipe AfriChain solutions. Système unifié de registre foncier et portail public blockchain.",
-  "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["Land Registration", "Property Transfer", "Public Verification", "Interactive Map"]
+  "name": "FoncierChain Citoyen",
+  "description": "Application citoyenne pour la vérification instantanée des titres fonciers via Blockchain Hyperledger Fabric et Firebase Data Connect.",
+  "requestFramePermissions": ["geolocation", "camera"],
+  "majorCapabilities": ["Vérification Instantanée", "Historique On-Chain", "Authentification SSI", "Géolocalisation Parcellaire"]
 }

@@ -14,6 +14,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register').then(m => m.RegisterParcel)
   },
   {
+    path: 'transfer',
+    loadComponent: () => import('./pages/transfer/transfer').then(m => m.TransferParcel)
+  },
+  {
     path: 'map',
     loadComponent: () => import('./pages/map/map-view').then(m => m.MapView)
   },

@@ -31,6 +31,7 @@ interface ParcelDisplay {
   status?: string;
   hash?: string;
   blockchainTxId?: string;
+  workflowStep?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createdAt?: any;
 }
@@ -56,7 +57,6 @@ interface ParcelDisplay {
         </p>
       </div>
       
-      <!-- ... (previous template remains high quality) ... -->
       <div class="glass-card overflow-hidden">
         <div class="bg-black/40 px-6 py-3 flex items-center justify-between border-b border-white/5">
           <div class="flex gap-2">
@@ -64,11 +64,14 @@ interface ParcelDisplay {
             <div class="h-3 w-3 rounded-full bg-yellow-500/50"></div>
             <div class="h-3 w-3 rounded-full bg-green-500/50"></div>
           </div>
-          <div class="text-[10px] font-mono text-slate-500">foncierchain-verify v2.5.0 — On-Chain Explorer</div>
+          <div class="text-[10px] font-mono text-slate-500 flex items-center gap-2">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            foncierchain-verify v2.6.0 — On-Chain Explorer (DC-SERVICE)
+          </div>
         </div>
         
         <div class="p-8 space-y-6">
-          <div class="flex items-center gap-2 mb-4">
+          <div class="flex items-center gap-2">
              <span class="text-[--primary] font-mono">>_</span>
              <span class="text-xs font-medium text-slate-400">Entrez un ID de parcelle (ex: bz-456) pour une vérification immuable</span>
           </div>
@@ -80,18 +83,18 @@ interface ParcelDisplay {
                      class="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white outline-none focus:border-[--primary] transition-all group-hover:border-white/20"
                      (keyup.enter)="search()">
             </div>
-            <button class="bg-[--primary] hover:bg-[--primary-hover] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all shrink-0" 
+            <button class="bg-[--primary] hover:bg-[--primary-hover] text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-all shrink-0 active:scale-95" 
                     (click)="search()" [disabled]="loading()">
               @if (loading()) {
                 <mat-icon class="animate-spin !text-lg">sync</mat-icon>
               } @else {
                 <mat-icon>search</mat-icon>
-                Vérifier
+                Vérifier On-Chain
               }
             </button>
           </div>
 
-          <div class="flex flex-wrap gap-2 pt-2">
+          <div class="flex flex-wrap gap-2 pt-2 border-t border-white/5 mt-4">
             @for (example of ['bz-456', 'BZV-2024-8821', 'MADIBOU-482']; track example) {
               <button (click)="searchQuery = example; search()" 
                       class="text-[10px] font-mono px-3 py-1.5 rounded bg-white/5 text-slate-500 hover:text-white hover:bg-white/10 transition-colors">
@@ -116,7 +119,26 @@ interface ParcelDisplay {
                     <span class="text-[9px] font-bold uppercase tracking-widest">Titre Authentifié Blockchain</span>
                   </div>
                   <h3 class="text-4xl font-bold text-white tracking-tight">{{ parcel()?.parcelId }}</h3>
-                  <div class="flex items-center gap-6 text-slate-400">
+                  
+                  <!-- Workflow Visual Tracker -->
+                  <div class="flex items-center gap-1 mt-4">
+                    @let step = parcel()?.workflowStep || 0;
+                    <div class="flex items-center">
+                      <div [class]="'h-2 w-8 rounded-full transition-all ' + (step >= 1 ? 'bg-blue-500' : 'bg-slate-800')"></div>
+                      <mat-icon [class]="'!text-[10px] mx-1 ' + (step >= 1 ? 'text-blue-500' : 'text-slate-600')">check_circle</mat-icon>
+                    </div>
+                    <div class="flex items-center">
+                      <div [class]="'h-2 w-8 rounded-full transition-all ' + (step >= 2 ? 'bg-orange-500' : 'bg-slate-800')"></div>
+                      <mat-icon [class]="'!text-[10px] mx-1 ' + (step >= 2 ? 'text-orange-500' : 'text-slate-600')">verified</mat-icon>
+                    </div>
+                    <div class="flex items-center">
+                      <div [class]="'h-2 w-8 rounded-full transition-all ' + (step >= 3 ? 'bg-green-500' : 'bg-slate-800')"></div>
+                      <mat-icon [class]="'!text-[10px] mx-1 ' + (step >= 3 ? 'text-green-500' : 'text-slate-600')">auto_awesome</mat-icon>
+                    </div>
+                    <span class="text-[8px] font-bold text-slate-500 uppercase ml-2 tracking-tighter">Blockchain Lifecycle</span>
+                  </div>
+
+                  <div class="flex items-center gap-6 text-slate-400 mt-6">
                     <div class="flex items-center gap-2">
                        <mat-icon class="!text-sm opacity-50">person</mat-icon>
                        <span class="text-sm font-medium">{{ parcel()?.currentOwner }}</span>
@@ -171,11 +193,46 @@ interface ParcelDisplay {
                   </div>
                </div>
 
-               <!-- Right: Blockchain Verification (Transaction History) -->
-               <div class="space-y-6">
+                <!-- Right: Blockchain Verification (Workflow & History) -->
+                <div class="space-y-6">
+                  <!-- Workflow Progress Section -->
+                  @let pState = parcel();
+                  @if (pState && pState.status !== 'FINALIZED') {
+                    <div class="p-6 rounded-2xl bg-[--primary]/5 border border-[--primary]/20 space-y-4">
+                      <h4 class="text-[10px] font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                        <mat-icon class="!text-sm text-[--primary]">pending_actions</mat-icon>
+                        Action Requise (Workflow Blockchain)
+                      </h4>
+                      
+                      @if (pState.status === 'DRAFT') {
+                        <div class="space-y-3">
+                          <p class="text-[10px] text-slate-400">Étape 2 : Le Représentant Communautaire (V3) doit confirmer l'occupation réelle du terrain.</p>
+                          <div class="flex gap-2">
+                            <input #sigV3 type="text" placeholder="Signature V3 (Community)" class="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-white outline-none focus:border-[--primary]">
+                            <button (click)="validateStep2(pState.parcelId || pState.id, sigV3.value)" 
+                                    class="bg-[--primary] text-white px-4 py-2 rounded-lg text-[10px] font-bold hover:scale-105 transition-all">
+                              VALIDER V3
+                            </button>
+                          </div>
+                        </div>
+                      } @else if (pState.status === 'COMMUNITY_VALIDATED') {
+                        <div class="space-y-3">
+                          <p class="text-[10px] text-slate-400">Étape finale : L'Agent Foncier (V1) doit minté le titre définitif on-chain.</p>
+                          <div class="flex gap-2">
+                            <input #sigV1 type="text" placeholder="Signature V1 (Agent)" class="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-white outline-none focus:border-[--primary]">
+                            <button (click)="validateStep3(pState.parcelId || pState.id, sigV1.value)" 
+                                    class="bg-[#10b981] text-white px-4 py-2 rounded-lg text-[10px] font-bold hover:scale-105 transition-all">
+                              MINT FINAL V1
+                            </button>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+
                   <h4 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
                     <mat-icon class="!text-sm text-slate-500">history</mat-icon>
-                    Historique Blockchain
+                    Historique du Titre
                   </h4>
                   <div class="space-y-4">
                     @if (blockchainHistory().length > 0) {
@@ -242,8 +299,8 @@ interface ParcelDisplay {
                 </button>
               </div>
               <div class="flex items-center gap-2 text-slate-600">
-                <mat-icon class="!text-xs">verified_user</mat-icon>
-                <span class="text-[9px] font-bold uppercase tracking-tighter">Powered by FoncierChain Node BZV-01 (Hyperledger Fabric)</span>
+                <mat-icon class="!text-xs">cloud_done</mat-icon>
+                <span class="text-[9px] font-bold uppercase tracking-tighter">foncierchain-service (us-east4) - Firebase Data Connect</span>
               </div>
             </div>
           </div>
@@ -315,6 +372,32 @@ export class Portal implements OnInit {
     });
   }
 
+  async validateStep2(parcelId: string | undefined, sigV3: string) {
+    if (!parcelId || !sigV3) return;
+    this.loading.set(true);
+    try {
+      await this.fancierChain.simulateValidateCommunity(parcelId, sigV3);
+      await this.search(); // Refresh UI
+    } catch (e) {
+      console.error(e);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async validateStep3(parcelId: string | undefined, sigV1: string) {
+    if (!parcelId || !sigV1) return;
+    this.loading.set(true);
+    try {
+      await this.fancierChain.simulateFinalize(parcelId, sigV1);
+      await this.search(); // Refresh UI
+    } catch (e) {
+      console.error(e);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
   async search() {
     if (!this.searchQuery.trim()) return;
     
@@ -330,16 +413,37 @@ export class Portal implements OnInit {
       const parcelDoc = await getDoc(doc(db, 'parcels', parcelId));
       
       if (parcelDoc.exists()) {
-        this.parcel.set(parcelDoc.data());
+        const data = parcelDoc.data();
+        this.parcel.set(data as ParcelDisplay);
         await this.loadFirebaseHistory(parcelId);
       } else {
-        // Try searching by cadastralId as well in Firebase
-        const q = query(collection(db, 'parcels'), where('cadastralId', '==', parcelId));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          const data = querySnapshot.docs[0].data();
-          this.parcel.set(data);
+        // Try searching by cadastralId
+        const qCad = query(collection(db, 'parcels'), where('cadastralId', '==', parcelId));
+        const snapCad = await getDocs(qCad);
+        
+        if (!snapCad.empty) {
+          const data = snapCad.docs[0].data();
+          this.parcel.set(data as ParcelDisplay);
           await this.loadFirebaseHistory(data['parcelId'] || data['id']);
+        } else {
+          // Try searching by neighborhood (case insensitive approximate search)
+          const qNeigh = query(collection(db, 'parcels'), where('neighborhood', '==', parcelId));
+          const snapNeigh = await getDocs(qNeigh);
+          
+          if (!snapNeigh.empty) {
+            const data = snapNeigh.docs[0].data();
+            this.parcel.set(data as ParcelDisplay);
+            await this.loadFirebaseHistory(data['parcelId'] || data['id']);
+          } else {
+            // Try searching by address
+            const qAddr = query(collection(db, 'parcels'), where('address', '==', parcelId));
+            const snapAddr = await getDocs(qAddr);
+            if (!snapAddr.empty) {
+              const data = snapAddr.docs[0].data();
+              this.parcel.set(data as ParcelDisplay);
+              await this.loadFirebaseHistory(data['parcelId'] || data['id']);
+            }
+          }
         }
       }
 

@@ -7,8 +7,8 @@ import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
-import {doc, setDoc, collection, addDoc, serverTimestamp} from 'firebase/firestore';
-import {db, auth} from '../../firebase';
+// import {doc, setDoc, collection, addDoc, serverTimestamp} from 'firebase/firestore';
+import {auth} from '../../firebase';
 import {User, signInWithPopup, GoogleAuthProvider} from 'firebase/auth';
 import {Router, RouterLink} from '@angular/router';
 import {FancierChain, LandRecord} from '../../services/fancier-chain';
@@ -294,12 +294,25 @@ export class RegisterParcel implements OnInit {
 
     try {
       const formVal = this.parcelForm.getRawValue();
+      const parcelId = formVal.parcelId.trim();
+
+      // --- SIMULATION: Double Attribution Check ---
+      const check = await this.fancierChain.simulateRegistration(parcelId);
+      if (!check.allowed) {
+        this.snackBar.open(check.reason || 'Erreur', 'Fermer', { 
+          duration: 10000,
+          panelClass: ['snackbar-error']
+        });
+        this.loading.set(false);
+        return;
+      }
       
       const payload: Partial<LandRecord> = {
-        id: formVal.parcelId,
+        id: parcelId,
         owner: formVal.currentOwner,
         city: formVal.city,
         neighborhood: formVal.neighborhood,
+        address: `${formVal.neighborhood}, ${formVal.city}`, // Searchable combined address
         cadastralId: formVal.cadastralId,
         area: formVal.surface,
         price: formVal.price,
@@ -307,47 +320,15 @@ export class RegisterParcel implements OnInit {
         documentHash: this.generatedHash()
       };
 
-      // Step 1: Initiate Draft
-      this.fancierChain.initiateDraft(payload).subscribe({
-        next: async (res) => {
-          const parcelId = formVal.parcelId;
-          const firebaseData = {
-            ...formVal,
-            blockchainTxId: res.txId,
-            assetId: res.assetId,
-            hash: payload.documentHash,
-            agentUid: this.user()?.uid || 'demo-agent',
-            status: 'DRAFT',
-            workflowStep: 1,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          };
-
-          await setDoc(doc(db, 'parcels', parcelId), firebaseData);
-          
-          await addDoc(collection(db, `parcels/${parcelId}/history`), {
-            parcelId,
-            newOwner: formVal.currentOwner,
-            date: serverTimestamp(),
-            type: 'DRAFT_INITIATION',
-            hash: payload.documentHash,
-            txId: res.txId,
-            agentUid: this.user()?.uid || 'demo-agent'
-          });
-
-          this.snackBar.open('Etape 1 complétée : Draft Initié sur la Blockchain', 'Fermer', { duration: 5000 });
-          this.router.navigate(['/portal'], { queryParams: { id: parcelId } });
-        },
-        error: (err) => {
-          console.error("API Error:", err);
-          this.snackBar.open("Échec du Backend API (Etape 1). Vérifiez vos accès ABAC.", 'Fermer', { duration: 8000 });
-          this.loading.set(false);
-        }
-      });
+      // Step 1: Initiate Draft (Simulation + Logic)
+      await this.fancierChain.simulateInitiateDraft(payload);
+      
+      this.snackBar.open('Étape 1 complétée : DRAFT initié sur la Blockchain simulation.', 'Fermer', { duration: 5000 });
+      this.router.navigate(['/portal'], { queryParams: { id: parcelId } });
       
     } catch (error: unknown) {
       console.error("Submit error:", error);
-      this.snackBar.open("Échec de l'opération.", 'Fermer', { duration: 5000 });
+      this.snackBar.open("Échec de l'opération (ABAC_DENIED ou double attribution).", 'Fermer', { duration: 5000 });
       this.loading.set(false);
     }
   }

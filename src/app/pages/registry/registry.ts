@@ -1,10 +1,9 @@
-import {ChangeDetectionStrategy, Component, signal, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, signal, OnInit, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
-import {collection, getDocs, orderBy, query, limit} from 'firebase/firestore';
-import {db} from '../../firebase';
 import {RouterLink} from '@angular/router';
+import {FancierChain} from '../../services/fancier-chain';
 
 interface Parcel {
   parcelId: string;
@@ -21,7 +20,7 @@ interface LedgerBlock {
   number: number;
   type: string;
   details: string;
-  timestamp: Date;
+  timestamp: any;
   hash: string;
   proof: string;
 }
@@ -42,7 +41,7 @@ interface LedgerBlock {
            </div>
            <div>
              <div class="text-[10px] text-slate-500 uppercase font-bold">Total Titres</div>
-             <div class="text-lg font-bold text-white">14,832</div>
+             <div class="text-lg font-bold text-white">{{ stats()?.total_parcels || '...' }}</div>
            </div>
         </div>
         <div class="glass-card p-4 border border-white/5 flex items-center gap-4">
@@ -90,7 +89,7 @@ interface LedgerBlock {
           <div class="pb-2 w-full md:w-64">
             <div class="relative">
               <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 !text-sm text-slate-500">search</mat-icon>
-              <input type="text" placeholder="Filtrer le registre..." 
+              <input type="text" placeholder="Filtrer le registre..." (input)="onSearch($event)"
                      class="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-xs text-white outline-none focus:border-[--primary] transition-all">
             </div>
           </div>
@@ -120,10 +119,12 @@ interface LedgerBlock {
                   <td class="px-6 py-4 text-xs text-slate-400">{{ p.usage }}</td>
                   <td class="px-6 py-4">
                     <span class="px-2 py-1 rounded-full text-[9px] font-bold" 
-                          [class.bg-[#10b98115]]="p.status === 'Sécurisé'"
-                          [class.text-[--primary]]="p.status === 'Sécurisé'"
-                          [class.bg-amber-400/10]="p.status === 'En attente'"
-                          [class.text-amber-400]="p.status === 'En attente'"
+                          [class.bg-[#10b98115]]="p.status === 'FINALIZED' || p.status === 'Sécurisé'"
+                          [class.text-[--primary]]="p.status === 'FINALIZED' || p.status === 'Sécurisé'"
+                          [class.bg-amber-400/10]="p.status === 'COMMUNITY_VALIDATED' || p.status === 'En attente'"
+                          [class.text-amber-400]="p.status === 'COMMUNITY_VALIDATED' || p.status === 'En attente'"
+                          [class.bg-blue-400/10]="p.status === 'DRAFT'"
+                          [class.text-blue-400]="p.status === 'DRAFT'"
                           [class.bg-red-400/10]="p.status === 'Litige'"
                           [class.text-red-400]="p.status === 'Litige'">
                       {{ p.status }}
@@ -160,7 +161,7 @@ interface LedgerBlock {
                         <div class="text-sm font-bold text-white">{{ block.details }}</div>
                      </div>
                      <div class="text-right">
-                        <div class="text-[10px] text-slate-400">{{ block.timestamp | date:'medium' }}</div>
+                        <div class="text-[10px] text-slate-400">{{ (block.timestamp?.toDate ? block.timestamp.toDate() : block.timestamp) | date:'medium' }}</div>
                         <div class="text-[9px] font-mono text-[--primary]">{{ block.hash.substring(0, 16) }}...</div>
                      </div>
                   </div>
@@ -180,28 +181,39 @@ interface LedgerBlock {
   `]
 })
 export class Registry implements OnInit {
+  private fancierChain = inject(FancierChain);
   activeTab = signal<'list' | 'ledger'>('list');
   parcels = signal<Parcel[]>([]);
   ledgerBlocks = signal<LedgerBlock[]>([]);
+  stats = signal<any>(null);
 
   ngOnInit() {
     this.loadParcels();
     this.loadLedger();
+    this.loadStats();
   }
 
-  async loadParcels() {
-    const q = query(collection(db, 'parcels'), orderBy('parcelId'), limit(20));
-    const querySnapshot = await getDocs(q);
-    const data = querySnapshot.docs.map(doc => doc.data() as Parcel);
-    if (data.length === 0) {
-      this.parcels.set([
-        { parcelId: 'BZV-2024-8821', currentOwner: 'Jean Makosso', surface: 420, usage: 'Résidentiel', address: 'Bacongo', hash: '0xabc...', status: 'Sécurisé' },
-        { parcelId: 'MADIBOU-482', currentOwner: 'Prosper Kiminou', surface: 680, usage: 'Mixte', address: 'Madibou', hash: '0xdef...', status: 'Litige' },
-        { parcelId: 'TAL-9941', currentOwner: 'Marie Ngoma', surface: 550, usage: 'Commercial', address: 'Talangaï', hash: '0xghi...', status: 'En attente' }
-      ]);
+  async loadStats() {
+    this.stats.set(await this.fancierChain.getDashboardStats());
+  }
+
+  async loadParcels(search?: string) {
+    let data: any[] = [];
+    if (search) {
+      data = await this.fancierChain.findParcel(search);
     } else {
-      this.parcels.set(data);
+      // Use existing findParcel logic or a generalized list if needed
+      // For now we use findParcel with empty to trigger defaults or we could add a listAll to service
+      // Let's use a mock for the full list if firestore query fails or just fetch first 20
+      const results = await this.fancierChain.findParcel(''); 
+      data = results;
     }
+    this.parcels.set(data as Parcel[]);
+  }
+
+  onSearch(event: any) {
+    const term = event.target.value;
+    this.loadParcels(term);
   }
 
   loadLedger() {

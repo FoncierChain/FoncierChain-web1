@@ -81,11 +81,18 @@ import { NetworkBackground } from './components/network-background';
             Enregistrer une Parcelle
           </a>
 
+          <a routerLink="/transfer" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
+             (click)="closeSidebarOnMobile()"
+             class="flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+            <mat-icon class="!text-lg">swap_horiz</mat-icon>
+            Mutation (Transfert)
+          </a>
+
           <a routerLink="/portal" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
              (click)="closeSidebarOnMobile()"
              class="flex items-center gap-3 px-4 py-3 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-            <mat-icon class="!text-lg">verified_user</mat-icon>
-            Vérification
+            <mat-icon class="!text-lg">smartphone</mat-icon>
+            Portail Citoyen
           </a>
 
           <a routerLink="/registry" routerLinkActive="bg-[#10b98115] !text-[--primary] border-r-2 border-[--primary]"
@@ -216,7 +223,8 @@ export class App {
     const url = this.router.url;
     if (url === '/' || url === '') return 'Tableau de Bord';
     if (url.includes('/register')) return 'Enregistrement';
-    if (url.includes('/portal')) return 'Vérification';
+    if (url.includes('/transfer')) return 'Mutation Foncier';
+    if (url.includes('/portal')) return 'Portail Citoyen';
     if (url.includes('/registry')) return 'Registre Public';
     if (url.includes('/map')) return 'Carte des Parcelles';
     if (url.includes('/reports')) return 'Rapports Analytiques';
@@ -229,7 +237,8 @@ export class App {
     const url = this.router.url;
     if (url === '/') return 'Vue d’ensemble visuelle du registre foncier';
     if (url.includes('/register')) return 'Gestion et enregistrement des titres fonciers';
-    if (url.includes('/portal')) return 'Vérifiez la légitimité d’un titre foncier';
+    if (url.includes('/transfer')) return 'Transfert de propriété et mutation de ledger';
+    if (url.includes('/portal')) return 'Vérification instantanée pour les citoyens';
     if (url.includes('/registry')) return 'Ledger immuable et public des transactions';
     if (url.includes('/map')) return 'Visualisation géographique du cadastre';
     if (url.includes('/reports')) return 'Rapports détaillés et audit des données';

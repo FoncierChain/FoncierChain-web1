@@ -1,7 +1,8 @@
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+import {FancierChain} from '../../services/fancier-chain';
 
 interface AuditLog {
   id: string;
@@ -47,7 +48,7 @@ interface DistributionData {
       <!-- Compliance Table -->
       <div class="glass-card overflow-hidden">
         <div class="p-5 border-b border-white/5">
-          <h3 class="text-xs font-bold text-white uppercase tracking-widest">Rapport de Conformité par District</h3>
+          <h3 class="text-xs font-bold text-white uppercase tracking-widest">Rapport de Conformité par District (Live Data)</h3>
         </div>
         <table class="w-full text-left">
           <thead>
@@ -60,7 +61,7 @@ interface DistributionData {
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5">
-            @for (item of distribution; track item.district) {
+            @for (item of distribution(); track item.district) {
               <tr class="hover:bg-white/5 transition-colors">
                 <td class="px-6 py-4 text-xs font-bold text-white">{{ item.district }}</td>
                 <td class="px-6 py-4 text-xs text-white">{{ item.total }}</td>
@@ -76,7 +77,7 @@ interface DistributionData {
                 <td class="px-6 py-4">
                    <div class="flex items-center gap-2">
                      <div class="h-1.5 w-1.5 rounded-full" [class.bg-[--primary]]="item.compliance > 80" [class.bg-amber-400]="item.compliance <= 80"></div>
-                     <span class="text-[9px] font-bold text-slate-400 italic">Conforme</span>
+                     <span class="text-[9px] font-bold text-slate-400 italic">En Règle</span>
                    </div>
                 </td>
               </tr>
@@ -140,17 +141,11 @@ interface DistributionData {
     :host { display: block; }
   `]
 })
-export class Reports {
+export class Reports implements OnInit {
+  private fancierChain = inject(FancierChain);
   lastUpdate = new Date();
   
-  distribution: DistributionData[] = [
-    { district: 'Bacongo', total: 2841, area: 1245000, compliance: 92 },
-    { district: 'Poto-Poto', total: 3102, area: 980400, compliance: 88 },
-    { district: 'Moungali', total: 1987, area: 1450200, compliance: 75 },
-    { district: 'Talangaï', total: 2234, area: 2101000, compliance: 81 },
-    { district: 'Madibou', total: 1654, area: 3200500, compliance: 68 },
-    { district: 'Djiri', total: 3014, area: 4120000, compliance: 95 }
-  ];
+  distribution = signal<DistributionData[]>([]);
 
   auditLogs: AuditLog[] = [
     { id: '1', timestamp: new Date(Date.now() - 1000*60*5), agent: 'AGT-001', action: 'CREATE', entity: 'BZV-102', status: 'SUCCESS' },
@@ -160,5 +155,9 @@ export class Reports {
     { id: '5', timestamp: new Date(Date.now() - 1000*60*55), agent: 'AGT-002', action: 'TRANSFER', entity: 'BZV-042', status: 'SUCCESS' },
     { id: '6', timestamp: new Date(Date.now() - 1000*60*65), agent: 'AGT-001', action: 'CREATE', entity: 'BZV-8821', status: 'SUCCESS' }
   ];
+
+  async ngOnInit() {
+    this.distribution.set(await this.fancierChain.getReports());
+  }
 
 }
