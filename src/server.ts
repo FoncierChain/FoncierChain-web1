@@ -6,26 +6,12 @@ import { dirname, resolve } from 'node:path';
 const angularAppEngine = new AngularAppEngine();
 
 /**
- * Gestionnaire pour Netlify
- */
-export async function netlifyAppEngineHandler(request: Request): Promise<Response> {
-  let context = {};
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { getContext } = await import('@netlify/angular-runtime/context.mjs' as any);
-    context = getContext();
-  } catch {
-    // On ignore si on n'est pas sur Netlify
-  }
-
-  const result = await angularAppEngine.handle(request, context);
-  return result || new Response('Not found', { status: 404 });
-}
-
-/**
  * Le gestionnaire de requête utilisé par l'Angular CLI (dev-server et pendant le build).
  */
-export const reqHandler = createRequestHandler(netlifyAppEngineHandler);
+export const reqHandler = createRequestHandler(async (request: Request) => {
+  const result = await angularAppEngine.handle(request);
+  return result || new Response('Not found', { status: 404 });
+});
 
 /**
  * Point d'entrée pour les environnements Node.js standards (Cloud Run, local prod)
@@ -54,19 +40,19 @@ if (isMain) {
           res.setHeader(key, value);
         });
         if (response.body) {
-          const reader = response.body.getReader();
-          const push = () => {
-             reader.read().then(({done, value}: {done: boolean, value: Uint8Array}) => {
-               if (done) {
-                 res.end();
-                 return;
-               }
-               res.write(value);
-               push();
-             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-             }).catch((err: any) => next(err));
-          };
-          push();
+           const reader = response.body.getReader();
+           const push = () => {
+              reader.read().then(({done, value}: {done: boolean, value: Uint8Array}) => {
+                if (done) {
+                  res.end();
+                  return;
+                }
+                res.write(value);
+                push();
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              }).catch((err: any) => next(err));
+           };
+           push();
         } else {
           res.end();
         }

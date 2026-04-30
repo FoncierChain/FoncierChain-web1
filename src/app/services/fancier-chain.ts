@@ -98,7 +98,10 @@ export class FancierChain {
   private baseUrl = 'http://localhost:8000/api/v1';
 
   private get headers() {
-    const token = localStorage.getItem('fancier_token');
+    let token = null;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      token = localStorage.getItem('fancier_token');
+    }
     return {
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Token ${token}` } : {})
