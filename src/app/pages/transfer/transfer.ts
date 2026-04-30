@@ -174,9 +174,10 @@ export class TransferParcel implements OnInit {
   async loadParcel() {
     if (!this.searchId.trim()) return;
     try {
-      const data = await this.fancierChain.findParcel(this.searchId);
+      const results = await this.fancierChain.findParcel(this.searchId);
 
-      if (data) {
+      if (results && results.length > 0) {
+        const data = results[0];
         if (data.status !== 'FINALIZED') {
           this.snackBar.open("Le titre doit être FINALISÉ avant toute mutation (Validation Triple Actor requise).", "Fermer", { duration: 5000 });
         }
@@ -187,6 +188,7 @@ export class TransferParcel implements OnInit {
       }
     } catch (e) {
       console.error(e);
+      this.snackBar.open("Erreur lors de la recherche.", "Fermer", { duration: 3000 });
     }
   }
 

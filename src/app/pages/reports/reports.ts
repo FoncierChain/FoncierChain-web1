@@ -147,24 +147,22 @@ export class Reports implements OnInit {
   
   distribution = signal<DistributionData[]>([]);
 
-  auditLogs: AuditLog[] = [
-    { id: '1', timestamp: new Date(Date.now() - 1000*60*5), agent: 'AGT-001', action: 'CREATE', entity: 'BZV-102', status: 'SUCCESS' },
-    { id: '2', timestamp: new Date(Date.now() - 1000*60*15), agent: 'AGT-001', action: 'TRANSFER', entity: 'BZV-098', status: 'SUCCESS' },
-    { id: '3', timestamp: new Date(Date.now() - 1000*60*28), agent: 'SYS-SRV', action: 'CREATE', entity: 'BZV-201', status: 'SUCCESS' },
-    { id: '4', timestamp: new Date(Date.now() - 1000*60*42), agent: 'AGT-004', action: 'CREATE', entity: 'BZV-156', status: 'WARNING' },
-    { id: '5', timestamp: new Date(Date.now() - 1000*60*55), agent: 'AGT-002', action: 'TRANSFER', entity: 'BZV-042', status: 'SUCCESS' },
-    { id: '6', timestamp: new Date(Date.now() - 1000*60*65), agent: 'AGT-001', action: 'CREATE', entity: 'BZV-8821', status: 'SUCCESS' }
-  ];
+  auditLogs: AuditLog[] = [];
 
   async ngOnInit() {
     const data = await this.fancierChain.getReports();
-    if (data && data.districts) {
-      this.distribution.set(data.districts.map((d: any) => ({
-        district: d.name,
-        total: d.total,
-        area: d.total * 1200, // Simulated area
-        compliance: Math.round((d.finalized / d.total) * 100)
-      })));
+    if (data) {
+      if (data.districts) {
+        this.distribution.set(data.districts.map((d: any) => ({
+          district: d.name,
+          total: d.total,
+          area: d.total * 1200, // Simulated area
+          compliance: Math.round((d.finalized / d.total) * 100)
+        })));
+      }
+      if (data.audit_logs) {
+        this.auditLogs = data.audit_logs;
+      }
     }
   }
 

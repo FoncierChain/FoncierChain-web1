@@ -309,16 +309,13 @@ export class Home {
     try {
       const data = await this.fancierChain.getDashboardStats();
       this.stats.set(data);
+      if (data && data.recentActivity) {
+        this.recentActivity = data.recentActivity;
+      }
     } catch (e) {
       console.error("Stats error", e);
     }
   }
 
-  recentActivity = [
-    { id: 1, name: 'Jean-Baptiste Mouakala', action: 'Draft Initié', location: 'Bacongo', status: 'Confirmé', time: '3 min' },
-    { id: 2, name: 'Marie-Claire Ngoma', action: 'Validation Communautaire', location: 'Poto-Poto', status: 'Vérifié', time: '11 min' },
-    { id: 3, name: 'Théodore Loemba', action: 'Titre Finalisé On-Chain', location: 'Moungali', status: 'Confirmé', time: '28 min' },
-    { id: 4, name: 'Angélique Bouanga', action: 'Transfert de propriété', location: 'Talangaï', status: 'En attente', time: '45 min' },
-    { id: 5, name: 'Prosper Kiminou', action: 'Signalement Anomalie', location: 'Madibou', status: 'Litige', time: '1 h' },
-  ];
+  recentActivity: any[] = [];
 }

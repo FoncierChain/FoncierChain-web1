@@ -317,7 +317,7 @@ export class Dashboard {
       },
       error: (err) => {
         console.error("API Login error:", err);
-        this.snackBar.open("Échec de connexion au Backend. Vérifiez vos identifiants ou si l'API est active sur http://localhost:8000/", "Fermer", { duration: 5000 });
+        this.snackBar.open("Échec de connexion au Backend. Vérifiez vos identifiants ou si l'API est active.", "Fermer", { duration: 5000 });
         this.loading.set(false);
       }
     });
@@ -378,38 +378,29 @@ export class Dashboard {
     if (this.parcelForm.invalid) return;
     this.loading.set(true);
 
-    try {
-      const formVal = this.parcelForm.value;
-      const parcelData = {
-        ...formVal,
-        hash: this.generatedHash(),
-        agentUid: this.user()?.uid,
-        status: 'Validated',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
+    const formVal = this.parcelForm.value;
+    const payload = {
+      cadastralId: formVal.parcelId,
+      owner: formVal.currentOwner,
+      usage_type: formVal.usage,
+      address: formVal.address,
+      area: formVal.surface,
+      coordinates: formVal.coordinates,
+      documentHash: this.generatedHash()
+    };
 
-      // Save Parcel
-      await setDoc(doc(db, 'parcels', formVal.parcelId), parcelData);
-
-      // Save Initial Transaction
-      await addDoc(collection(db, `parcels/${formVal.parcelId}/history`), {
-        parcelId: formVal.parcelId,
-        newOwner: formVal.currentOwner,
-        date: serverTimestamp(),
-        type: 'Initial Registration',
-        hash: this.generatedHash(),
-        agentUid: this.user()?.uid
-      });
-
-      this.snackBar.open('Parcelle enregistrée avec succès sur la blockchain !', 'Fermer', { duration: 5000 });
-      this.parcelForm.reset();
-    } catch (error) {
-      console.error("Submit error:", error);
-      this.snackBar.open("Erreur lors de l'enregistrement. Vérifiez vos permissions.", 'Fermer', { duration: 5000 });
-    } finally {
-      this.loading.set(false);
-    }
+    this.fancierChain.initiateDraft(payload).subscribe({
+      next: (res) => {
+        this.snackBar.open(`Parcelle ${res.assetId} enregistrée en brouillon. Transaction: ${res.txId}`, 'Fermer', { duration: 5000 });
+        this.parcelForm.reset();
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error("Submit error:", err);
+        this.snackBar.open("Erreur lors de l'enregistrement via l'API.", 'Fermer', { duration: 5000 });
+        this.loading.set(false);
+      }
+    });
   }
 }
 

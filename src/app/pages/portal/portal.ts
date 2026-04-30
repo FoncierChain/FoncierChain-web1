@@ -375,27 +375,29 @@ export class Portal implements OnInit {
   async validateStep2(parcelId: string | undefined, sigV3: string) {
     if (!parcelId || !sigV3) return;
     this.loading.set(true);
-    try {
-      await this.fancierChain.simulateValidateCommunity(parcelId, sigV3);
-      await this.search(); // Refresh UI
-    } catch (e) {
-      console.error(e);
-    } finally {
-      this.loading.set(false);
-    }
+    this.fancierChain.validateCommunity(parcelId, sigV3).subscribe({
+      next: () => {
+        this.search();
+      },
+      error: (e) => {
+        console.error(e);
+        this.loading.set(false);
+      }
+    });
   }
 
   async validateStep3(parcelId: string | undefined, sigV1: string) {
     if (!parcelId || !sigV1) return;
     this.loading.set(true);
-    try {
-      await this.fancierChain.simulateFinalize(parcelId, sigV1);
-      await this.search(); // Refresh UI
-    } catch (e) {
-      console.error(e);
-    } finally {
-      this.loading.set(false);
-    }
+    this.fancierChain.finalizeLand(parcelId, sigV1).subscribe({
+      next: () => {
+        this.search();
+      },
+      error: (e) => {
+        console.error(e);
+        this.loading.set(false);
+      }
+    });
   }
 
   async search() {
@@ -408,51 +410,23 @@ export class Portal implements OnInit {
     this.blockchainHistory.set([]);
 
     try {
-      // 1. Search locally/Firebase (for UI/Metadata)
-      const parcelId = this.searchQuery.trim();
-      const parcelDoc = await getDoc(doc(db, 'parcels', parcelId));
+      const qStr = this.searchQuery.trim();
+      const results = await this.fancierChain.findParcel(qStr);
       
-      if (parcelDoc.exists()) {
-        const data = parcelDoc.data();
+      if (results && results.length > 0) {
+        const data = results[0];
         this.parcel.set(data as ParcelDisplay);
-        await this.loadFirebaseHistory(parcelId);
-      } else {
-        // Try searching by cadastralId
-        const qCad = query(collection(db, 'parcels'), where('cadastralId', '==', parcelId));
-        const snapCad = await getDocs(qCad);
-        
-        if (!snapCad.empty) {
-          const data = snapCad.docs[0].data();
-          this.parcel.set(data as ParcelDisplay);
-          await this.loadFirebaseHistory(data['parcelId'] || data['id']);
-        } else {
-          // Try searching by neighborhood (case insensitive approximate search)
-          const qNeigh = query(collection(db, 'parcels'), where('neighborhood', '==', parcelId));
-          const snapNeigh = await getDocs(qNeigh);
-          
-          if (!snapNeigh.empty) {
-            const data = snapNeigh.docs[0].data();
-            this.parcel.set(data as ParcelDisplay);
-            await this.loadFirebaseHistory(data['parcelId'] || data['id']);
-          } else {
-            // Try searching by address
-            const qAddr = query(collection(db, 'parcels'), where('address', '==', parcelId));
-            const snapAddr = await getDocs(qAddr);
-            if (!snapAddr.empty) {
-              const data = snapAddr.docs[0].data();
-              this.parcel.set(data as ParcelDisplay);
-              await this.loadFirebaseHistory(data['parcelId'] || data['id']);
-            }
-          }
+        const pid = data['parcelId'] || data['id'];
+        if (pid) {
+          await this.loadFirebaseHistory(pid);
         }
       }
 
-      // 2. Fetch Source of Truth from Blockchain API
-      this.fancierChain.getLandHistory(parcelId).subscribe({
+      // Fetch Source of Truth from Blockchain API
+      this.fancierChain.getLandHistory(qStr).subscribe({
         next: (res) => {
           this.blockchainHistory.set(res.history);
-          // If we didn't find the parcel in Firebase, we might want to still show basic info from the latest history entry
-          if (!this.parcel() && res.history.length > 0) {
+          if (!this.parcel() && res.history && res.history.length > 0) {
             const lastEntry = res.history[0];
             this.parcel.set({
               parcelId: res.land_id,
@@ -463,7 +437,7 @@ export class Portal implements OnInit {
             });
           }
         },
-        error: (err) => console.log("Blockchain history fetch failed (maybe offline or ID not on-chain):", err)
+        error: (err) => console.log("Blockchain history fetch failed:", err)
       });
 
     } catch (error) {
