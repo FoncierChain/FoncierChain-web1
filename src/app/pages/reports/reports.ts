@@ -157,7 +157,15 @@ export class Reports implements OnInit {
   ];
 
   async ngOnInit() {
-    this.distribution.set(await this.fancierChain.getReports());
+    const data = await this.fancierChain.getReports();
+    if (data && data.districts) {
+      this.distribution.set(data.districts.map((d: any) => ({
+        district: d.name,
+        total: d.total,
+        area: d.total * 1200, // Simulated area
+        compliance: Math.round((d.finalized / d.total) * 100)
+      })));
+    }
   }
 
 }
