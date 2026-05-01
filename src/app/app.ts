@@ -6,6 +6,7 @@ import {CommonModule} from '@angular/common';
 import {auth} from './firebase';
 import {User, signOut} from 'firebase/auth';
 import { NetworkBackground } from './components/network-background';
+import { ThemeService } from './services/theme';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -13,7 +14,7 @@ import { NetworkBackground } from './components/network-background';
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, MatIconModule, MatButtonModule, NetworkBackground],
   template: `
-    <div class="flex h-screen overflow-hidden bg-[--bg-dark] text-white relative">
+    <div class="flex h-screen overflow-hidden bg-[--bg-dark] text-[--text-primary] relative transition-colors duration-300">
       <app-network-background></app-network-background>
       
       <!-- Sidebar Overlay (Mobile) -->
@@ -148,10 +149,10 @@ import { NetworkBackground } from './components/network-background';
               <mat-icon>menu</mat-icon>
             </button>
             <div class="flex flex-col">
-              <h1 class="text-sm lg:text-lg font-bold text-white leading-tight">
+              <h1 class="text-sm lg:text-lg font-bold text-[--text-primary] leading-tight transition-colors">
                 {{ getPageTitle() }}
               </h1>
-              <p class="text-[10px] text-slate-500 uppercase tracking-widest font-medium">
+              <p class="text-[10px] text-[--text-secondary] uppercase tracking-widest font-medium transition-colors">
                 {{ getPageSubtitle() }}
               </p>
             </div>
@@ -165,13 +166,21 @@ import { NetworkBackground } from './components/network-background';
                 ENREGISTRER
               </button>
             }
-            <button class="p-2 text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+
+            <!-- Theme Toggle -->
+            <button (click)="themeService.toggleTheme()" 
+                    class="p-2 text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--primary]/10 rounded-lg transition-all"
+                    [title]="themeService.isDarkMode() ? 'Mode Clair' : 'Mode Sombre'">
+              <mat-icon class="!text-lg">{{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+            </button>
+
+            <button class="p-2 text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--primary]/10 rounded-lg transition-all">
               <mat-icon class="!text-lg">notifications</mat-icon>
             </button>
-            <button class="p-2 text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+            <button class="p-2 text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--primary]/10 rounded-lg transition-all">
               <mat-icon class="!text-lg">help_outline</mat-icon>
             </button>
-            <div class="h-8 w-8 rounded-lg bg-[--bg-card] border border-[--border-subtle] flex items-center justify-center text-slate-400 cursor-pointer hover:border-[--primary] transition-all">
+            <div class="h-8 w-8 rounded-lg bg-[--bg-card] border border-[--border-subtle] flex items-center justify-center text-[--text-secondary] cursor-pointer hover:border-[--primary] hover:text-[--primary] transition-all">
               <mat-icon class="!text-lg">person</mat-icon>
             </div>
           </div>
@@ -197,6 +206,7 @@ import { NetworkBackground } from './components/network-background';
 })
 export class App {
   public router = inject(Router);
+  public themeService = inject(ThemeService);
   sidebarOpen = signal(false);
   user = signal<User | null>(null);
 

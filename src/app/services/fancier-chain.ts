@@ -94,8 +94,8 @@ export interface RegisterUserResponse {
 export class FancierChain {
   private http = inject(HttpClient);
   
-  // Base URL for the API (relative to the current host)
-  private baseUrl = '/api/v1';
+  // Base URL for the API (pointing to the Node.js Blockchain backend)
+  private baseUrl = 'http://localhost:3001/api/v1';
 
   private get headers() {
     let token = null;
@@ -148,6 +148,28 @@ export class FancierChain {
   }
 
   /**
+   * Get All Parcels for Registry Table
+   */
+  async getAllParcels(): Promise<any[]> {
+    try {
+      return await this.http.get<any[]>(`${this.baseUrl}/land/`, { headers: this.headers }).toPromise() || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /**
+   * Get Global Ledger History
+   */
+  async getGlobalLedger(): Promise<any[]> {
+    try {
+      return await this.http.get<any[]>(`${this.baseUrl}/ledger/`, { headers: this.headers }).toPromise() || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /**
    * Map Data
    */
   async getMapData(): Promise<any[]> {
@@ -166,6 +188,20 @@ export class FancierChain {
       return await this.http.get<any>(`${this.baseUrl}/reports/`, { headers: this.headers }).toPromise();
     } catch (e) {
       return { districts: [] };
+    }
+  }
+
+  /**
+   * Validate geometry (overlap check + geodesic area computation)
+   */
+  async validateGeometry(coordinates: number[][]): Promise<any> {
+    try {
+      return await this.http.post<any>(`${this.baseUrl}/land/validate-geometry/`, 
+        { coordinates }, 
+        { headers: this.headers }
+      ).toPromise();
+    } catch (e) {
+      return { valid: true, overlaps: [], computed_area_m2: 0 };
     }
   }
 

@@ -28,10 +28,10 @@ interface ParcelData {
   standalone: true,
   imports: [CommonModule, MatIconModule, MatButtonModule, FormsModule, RouterLink],
   template: `
-    <div class="h-full flex flex-col lg:flex-row gap-0 animate-fade-in text-white">
+    <div class="map-layout flex flex-col lg:flex-row gap-0 animate-fade-in text-white">
       
       <!-- Left Sidebar (Stats & Filters) -->
-      <div class="w-full lg:w-80 bg-black/40 backdrop-blur-xl border-r border-white/5 flex flex-col shrink-0 overflow-y-auto">
+      <div class="w-full lg:w-80 bg-black/40 backdrop-blur-xl lg:border-r border-b lg:border-b-0 border-white/5 flex flex-col shrink-0 overflow-y-auto max-h-[40vh] lg:max-h-none">
         <div class="p-6 space-y-8">
           
           <!-- Header -->
@@ -133,22 +133,35 @@ interface ParcelData {
       </div>
 
       <!-- Map Container -->
-      <div class="flex-1 relative overflow-hidden bg-[#1a1c1e]">
-        <div #mapContainer class="h-full w-full grayscale contrast-125 invert-[0.1]"></div>
+      <div class="flex-1 relative overflow-hidden bg-[#1a1c1e] min-h-[50vh] lg:min-h-0">
+        <div #mapContainer class="h-full w-full"></div>
         
         <!-- Map Overlay Header -->
-        <div class="absolute top-6 left-6 right-6 z-[1000] flex justify-between items-center pointer-events-none">
-           <div class="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 pointer-events-auto">
+        <div class="absolute top-3 left-3 right-3 lg:top-6 lg:left-6 lg:right-6 z-[1000] flex flex-wrap justify-between items-center gap-2 pointer-events-none">
+           <div class="bg-black/60 backdrop-blur-md px-3 py-1.5 lg:px-4 lg:py-2 rounded-xl border border-white/10 pointer-events-auto">
              <div class="flex items-center gap-2">
                <div class="h-1.5 w-1.5 rounded-full bg-[--primary] animate-pulse"></div>
-               <span class="text-[9px] font-bold text-white uppercase tracking-widest">SIG Hyperledger Fabric On-chain</span>
+               <span class="text-[8px] lg:text-[9px] font-bold text-white uppercase tracking-widest">SIG Blockchain</span>
              </div>
            </div>
            
-           <button routerLink="/portal" class="bg-[--primary] hover:bg-[--primary-hover] text-white px-4 py-2 rounded-xl text-[10px] font-bold flex items-center gap-2 transition-all shadow-xl pointer-events-auto">
+           <button routerLink="/portal" class="bg-[--primary] hover:bg-[--primary-hover] text-white px-3 py-1.5 lg:px-4 lg:py-2 rounded-xl text-[9px] lg:text-[10px] font-bold flex items-center gap-1 lg:gap-2 transition-all shadow-xl pointer-events-auto">
              <mat-icon class="!text-sm">verified_user</mat-icon>
-             Vérifier un Titre
+             Vérifier
            </button>
+        </div>
+
+        <!-- Tile Switcher -->
+        <div class="absolute bottom-5 right-5 z-[1000] flex gap-1 bg-black/70 backdrop-blur-md border border-white/10 rounded-xl p-1 pointer-events-auto">
+          <button (click)="switchTile('satellite')" [class]="'px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ' + (activeTile === 'satellite' ? 'bg-[--primary] text-black' : 'text-slate-400 hover:text-white hover:bg-white/10')">
+            Satellite
+          </button>
+          <button (click)="switchTile('streets')" [class]="'px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ' + (activeTile === 'streets' ? 'bg-[--primary] text-black' : 'text-slate-400 hover:text-white hover:bg-white/10')">
+            Rues
+          </button>
+          <button (click)="switchTile('dark')" [class]="'px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all ' + (activeTile === 'dark' ? 'bg-[--primary] text-black' : 'text-slate-400 hover:text-white hover:bg-white/10')">
+            Sombre
+          </button>
         </div>
 
         <!-- Selection Overlay -->
@@ -196,10 +209,15 @@ interface ParcelData {
   `,
   styles: [`
     :host { display: block; height: calc(100vh - 64px); }
+    .map-layout { height: 100%; }
     .custom-scrollbar::-webkit-scrollbar { width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.1); }
+    @media (max-width: 1023px) {
+      :host { height: auto; min-height: calc(100vh - 64px); }
+      .map-layout { height: auto; min-height: calc(100vh - 64px); }
+    }
   `]
 })
 export class MapView implements AfterViewInit {
@@ -214,6 +232,11 @@ export class MapView implements AfterViewInit {
   parcels = signal<ParcelData[]>([]);
   filteredParcels = signal<ParcelData[]>([]);
   stats = signal<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tileLayers: any = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  currentTileLayer: any = null;
+  activeTile = 'satellite';
 
   filterType = 'Tous';
   private platformId = inject(PLATFORM_ID);
@@ -235,13 +258,41 @@ export class MapView implements AfterViewInit {
     const brazzaville: [number, number] = [-4.2634, 15.2832];
     this.map = L.map(this.mapContainer.nativeElement, {
       zoomControl: false
-    }).setView(brazzaville, 14);
+    }).setView(brazzaville, 13);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; CartoDB'
-    }).addTo(this.map);
+    // Define all tile layers (real-time from public tile servers)
+    this.tileLayers = {
+      satellite: L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+        attribution: '&copy; Google Maps', maxZoom: 20
+      }),
+      streets: L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        attribution: '&copy; Google Maps', maxZoom: 20
+      }),
+      dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; CartoDB', maxZoom: 20
+      })
+    };
+
+    // Start with streets (most readable)
+    this.currentTileLayer = this.tileLayers['streets'];
+    this.currentTileLayer.addTo(this.map);
+    this.activeTile = 'streets';
 
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+  }
+
+  switchTile(type: string) {
+    if (this.activeTile === type) return;
+    // Remove current tile layer
+    if (this.currentTileLayer && this.map.hasLayer(this.currentTileLayer)) {
+      this.map.removeLayer(this.currentTileLayer);
+    }
+    // Add new one
+    this.currentTileLayer = this.tileLayers[type];
+    this.currentTileLayer.addTo(this.map);
+    // Make sure tiles are below polygons
+    this.currentTileLayer.bringToBack();
+    this.activeTile = type;
   }
 
   async loadParcels(search?: string) {
@@ -295,23 +346,91 @@ export class MapView implements AfterViewInit {
 
     this.filteredParcels().forEach(parcel => {
       if (parcel.coordinates && parcel.coordinates.length >= 3) {
-        let color = '#10b981'; // FINALIZED
-        if (parcel.status === 'DRAFT') color = '#60a5fa';
-        if (parcel.status === 'COMMUNITY_VALIDATED') color = '#f59e0b';
+        let color = '#00e57a'; // FINALIZED - bright green
+        if (parcel.status === 'DRAFT') { color = '#3b82f6'; }
+        if (parcel.status === 'COMMUNITY_VALIDATED') { color = '#f59e0b'; }
         
+        // 1. Outer white border (cadastral boundary line)
+        const outerBorder = L.polygon(parcel.coordinates, {
+          color: '#ffffff',
+          fillColor: 'transparent',
+          fillOpacity: 0,
+          weight: 5,
+          opacity: 0.8,
+          dashArray: '',
+          lineCap: 'square',
+          lineJoin: 'miter'
+        }).addTo(this.map);
+
+        // 2. Inner colored border  
         const polygon = L.polygon(parcel.coordinates, {
           color: color,
           fillColor: color,
-          fillOpacity: 0.3,
-          weight: 1.5,
-          className: 'parcel-polygon cursor-pointer'
+          fillOpacity: 0.25,
+          weight: 3,
+          opacity: 1,
+          dashArray: '8, 4',
+          lineCap: 'square',
+          lineJoin: 'miter'
         }).addTo(this.map);
 
-        polygon.on('click', () => {
-          this.selectedParcel.set(parcel);
+        // 3. Corner markers at each vertex
+        parcel.coordinates.forEach((coord: any) => {
+          const cornerMarker = L.circleMarker(coord, {
+            radius: 5,
+            color: '#ffffff',
+            fillColor: color,
+            fillOpacity: 1,
+            weight: 2
+          }).addTo(this.map);
+          this.layers.push(cornerMarker);
         });
 
+        // 4. Label at the center with parcel ID + owner
+        const center = polygon.getBounds().getCenter();
+        const label = L.marker(center, {
+          icon: L.divIcon({
+            className: 'parcel-label',
+            html: `<div style="
+              background: rgba(0,0,0,0.85);
+              color: ${color};
+              padding: 4px 10px;
+              border-radius: 6px;
+              font-size: 11px;
+              font-weight: 800;
+              white-space: nowrap;
+              border: 2px solid ${color};
+              box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+              text-align: center;
+              line-height: 1.4;
+              font-family: 'Space Mono', monospace;
+            ">
+              <div>${parcel.parcelId}</div>
+              <div style="font-size:8px;color:#ccc;font-weight:400;">${parcel.surface} m² · ${parcel.usage}</div>
+            </div>`,
+            iconSize: [0, 0],
+            iconAnchor: [50, 20]
+          })
+        }).addTo(this.map);
+
+        // 5. Click handlers
+        polygon.on('click', () => { this.selectedParcel.set(parcel); });
+        outerBorder.on('click', () => { this.selectedParcel.set(parcel); });
+        label.on('click', () => { this.selectedParcel.set(parcel); });
+
+        // 6. Hover effect - make it glow
+        polygon.on('mouseover', () => {
+          polygon.setStyle({ fillOpacity: 0.5, weight: 4, dashArray: '' });
+          outerBorder.setStyle({ weight: 6, color: color });
+        });
+        polygon.on('mouseout', () => {
+          polygon.setStyle({ fillOpacity: 0.25, weight: 3, dashArray: '8, 4' });
+          outerBorder.setStyle({ weight: 5, color: '#ffffff' });
+        });
+
+        this.layers.push(outerBorder);
         this.layers.push(polygon);
+        this.layers.push(label);
       }
     });
 

@@ -202,11 +202,18 @@ export class Registry implements OnInit {
     if (search) {
       data = await this.fancierChain.findParcel(search);
     } else {
-      // Use existing findParcel logic or a generalized list if needed
-      // For now we use findParcel with empty to trigger defaults or we could add a listAll to service
-      // Let's use a mock for the full list if firestore query fails or just fetch first 20
-      const results = await this.fancierChain.findParcel(''); 
-      data = results;
+      data = await this.fancierChain.getAllParcels();
+      
+      // Mappage des propriétés du backend vers l'interface Parcel
+      data = data.map(p => ({
+        parcelId: p.assetID || p.cadastralId,
+        currentOwner: p.owner,
+        surface: p.area,
+        usage: p.usage_type || 'Residential',
+        address: p.address || 'Brazzaville, Congo',
+        hash: p.hash || '...',
+        status: p.status
+      }));
     }
     this.parcels.set(data as Parcel[]);
   }
@@ -216,11 +223,8 @@ export class Registry implements OnInit {
     this.loadParcels(term);
   }
 
-  loadLedger() {
-    this.ledgerBlocks.set([
-      { number: 18429, type: 'CREATE', details: 'Enregistrement initial de la parcelle BZV-2024-8821', timestamp: new Date(), hash: '0x9f8b2c59fd26a806444b0e3c3e2a1b0c9f8b2c59', proof: 'af78...d892' },
-      { number: 18428, type: 'TRANSFER', details: 'Transfert de propriété de BZV-2024-8712 vers Alphonse Mabiala', timestamp: new Date(Date.now() - 3600000), hash: '0x1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0', proof: 'ee21...c901' },
-      { number: 18427, type: 'CREATE', details: 'Nouvelle parcelle enregistrée TAL-9941', timestamp: new Date(Date.now() - 7200000), hash: '0x7d8e9f0a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6', proof: 'cc45...a112' }
-    ]);
+  async loadLedger() {
+    const blocks = await this.fancierChain.getGlobalLedger();
+    this.ledgerBlocks.set(blocks);
   }
 }
