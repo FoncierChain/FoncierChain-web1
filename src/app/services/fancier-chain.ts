@@ -1,8 +1,8 @@
-import {Injectable, inject} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {doc, getDoc, setDoc, addDoc, collection, serverTimestamp, query, where, getDocs} from 'firebase/firestore';
-import {db} from '../firebase';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { doc, getDoc, setDoc, addDoc, collection, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../firebase';
 
 // --- Interfaces ---
 
@@ -93,9 +93,13 @@ export interface RegisterUserResponse {
 })
 export class FancierChain {
   private http = inject(HttpClient);
-  
+
   // Base URL for the API (pointing to the Node.js Blockchain backend)
-  private baseUrl = 'http://localhost:3001/api/v1';
+  // private baseUrl = 'http://localhost:3001/api/v1';
+
+  private baseUrl = 'https://foncierchain-web1.onrender.com';
+
+
 
   private get headers() {
     let token = null;
@@ -126,9 +130,9 @@ export class FancierChain {
     if (!qId) return null;
     try {
       // Use citizen verify endpoint for search
-      const result = await this.http.get<any>(`${this.baseUrl}/citizen/verify/`, { 
+      const result = await this.http.get<any>(`${this.baseUrl}/citizen/verify/`, {
         params: { land_id: qId },
-        headers: this.headers 
+        headers: this.headers
       }).toPromise();
       return result ? [result] : null;
     } catch (e) {
@@ -196,8 +200,8 @@ export class FancierChain {
    */
   async validateGeometry(coordinates: number[][]): Promise<any> {
     try {
-      return await this.http.post<any>(`${this.baseUrl}/land/validate-geometry/`, 
-        { coordinates }, 
+      return await this.http.post<any>(`${this.baseUrl}/land/validate-geometry/`,
+        { coordinates },
         { headers: this.headers }
       ).toPromise();
     } catch (e) {
@@ -211,17 +215,17 @@ export class FancierChain {
     return this.http.post<RegisterLandResponse>(`${this.baseUrl}/land/draft/`, data, { headers: this.headers });
   }
 
-  validateCommunity(landId: string, signatureV3: string): Observable<{status: string, txId?: string}> {
-    return this.http.patch<{status: string, txId?: string}>(`${this.baseUrl}/land/validate/`, { 
-      land_id: landId, 
-      signature_v3: signatureV3 
+  validateCommunity(landId: string, signatureV3: string): Observable<{ status: string, txId?: string }> {
+    return this.http.patch<{ status: string, txId?: string }>(`${this.baseUrl}/land/validate/`, {
+      land_id: landId,
+      signature_v3: signatureV3
     }, { headers: this.headers });
   }
 
   finalizeLand(landId: string, signatureV1: string): Observable<RegisterLandResponse> {
-    return this.http.patch<RegisterLandResponse>(`${this.baseUrl}/land/finalize/`, { 
-      land_id: landId, 
-      signature_v1: signatureV1 
+    return this.http.patch<RegisterLandResponse>(`${this.baseUrl}/land/finalize/`, {
+      land_id: landId,
+      signature_v1: signatureV1
     }, { headers: this.headers });
   }
 
@@ -239,8 +243,8 @@ export class FancierChain {
 
   // --- Identity & Auctions ---
 
-  verifyIdentity(data: IdentityVerifyPayload): Observable<{status: string, message: string}> {
-    return this.http.post<{status: string, message: string}>(`${this.baseUrl}/identity/verify/`, data, { headers: this.headers });
+  verifyIdentity(data: IdentityVerifyPayload): Observable<{ status: string, message: string }> {
+    return this.http.post<{ status: string, message: string }>(`${this.baseUrl}/identity/verify/`, data, { headers: this.headers });
   }
 
   getIdentityStatus(): Observable<IdentityStatusResponse> {
