@@ -97,7 +97,7 @@ export class FancierChain {
   // Base URL for the API (pointing to the Node.js Blockchain backend)
   // private baseUrl = 'http://localhost:3001/api/v1';
 
-  private baseUrl = 'https://foncierchain-web1.onrender.com';
+  private baseUrl = 'https://foncierchain-web1.onrender.com/api/v1';
 
 
 
