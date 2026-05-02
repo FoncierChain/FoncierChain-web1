@@ -1,11 +1,15 @@
 self.addEventListener('install', (e) => {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (e) => {
-  self.clients.claim();
+  e.waitUntil(
+    caches.open('foncierchain-store').then((cache) => cache.addAll([
+      '/',
+      '/portal',
+      '/index.html',
+    ])),
+  );
 });
 
 self.addEventListener('fetch', (e) => {
-  // Empty fetch handler to satisfy PWA requirements
+  e.respondWith(
+    caches.match(e.request).then((response) => response || fetch(e.request)),
+  );
 });
