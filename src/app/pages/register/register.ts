@@ -257,20 +257,10 @@ declare const L: any;
                       Signatures Assermentées (Blockchain)
                     </h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                      <div class="space-y-2">
-                        <label for="reg-sig1" class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Agent Foncier (V1)</label>
-                        <input id="reg-sig1" formControlName="signatureV1" placeholder="Signature ID"
-                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
-                      </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                       <div class="space-y-2">
                         <label for="reg-sig2" class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Géomètre Agréé (V2)</label>
                         <input id="reg-sig2" formControlName="signatureV2" placeholder="Signature ID"
-                               class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
-                      </div>
-                      <div class="space-y-2">
-                        <label for="reg-sig3" class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Représentant Local (V3)</label>
-                        <input id="reg-sig3" formControlName="signatureV3" placeholder="Signature ID"
                                class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-xs outline-none focus:border-[--primary] transition-all">
                       </div>
                     </div>
@@ -390,9 +380,7 @@ export class RegisterParcel implements OnInit {
       surface: [null, [Validators.required, Validators.min(1)]],
       price: [null, [Validators.required, Validators.min(0)]],
       currentOwner: ['', [Validators.required]],
-      signatureV1: ['', [Validators.required]],
-      signatureV2: ['', [Validators.required]],
-      signatureV3: ['', [Validators.required]]
+      signatureV2: ['', [Validators.required]]
     });
 
     this.parcelForm.valueChanges.subscribe(val => {
