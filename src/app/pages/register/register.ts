@@ -472,6 +472,11 @@ export class RegisterParcel implements OnInit {
       
       // Compute geodesic area
       this.computeAndSetArea(coords);
+      
+      // Reverse Geocoding to auto-fill neighborhood
+      if (coords.length > 0) {
+        this.fetchNeighborhoodFromCoords(coords[0][0], coords[0][1]);
+      }
     });
 
     // Handle polygon edited
@@ -481,6 +486,11 @@ export class RegisterParcel implements OnInit {
         const coords = latlngs.map((ll: any) => [ll.lat, ll.lng]);
         this.drawnCoords.set(coords);
         this.computeAndSetArea(coords);
+        
+        // Reverse Geocoding to auto-fill neighborhood
+        if (coords.length > 0) {
+          this.fetchNeighborhoodFromCoords(coords[0][0], coords[0][1]);
+        }
       });
     });
 
@@ -524,6 +534,25 @@ export class RegisterParcel implements OnInit {
 
   coordToString(c: number[]): string {
     return `[${c[0].toFixed(4)}, ${c[1].toFixed(4)}]`;
+  }
+
+  async fetchNeighborhoodFromCoords(lat: number, lng: number) {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14`);
+      const data = await response.json();
+      if (data && data.address) {
+        const addr = data.address;
+        const neighborhood = addr.neighbourhood || addr.suburb || addr.city_district || addr.village || addr.town || addr.city || '';
+        if (neighborhood) {
+          // Format properly (Title Case)
+          const cleanName = neighborhood.toLowerCase().replace(/(^\w|\s\w|-\w)/g, (m: string) => m.toUpperCase());
+          this.parcelForm.patchValue({ neighborhood: cleanName });
+          this.snackBar.open(`📍 Quartier détecté automatiquement : ${cleanName}`, 'Fermer', { duration: 4000 });
+        }
+      }
+    } catch (e) {
+      console.error('Erreur Reverse Geocoding', e);
+    }
   }
 
   async login() {

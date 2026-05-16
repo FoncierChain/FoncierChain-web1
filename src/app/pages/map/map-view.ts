@@ -80,9 +80,9 @@ interface ParcelData {
               <select id="type-select" [(ngModel)]="filterType" (change)="applyFilters()"
                       class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs outline-none focus:border-[--primary] transition-all">
                 <option value="Tous">Tous les usages</option>
-                <option value="Résidentiel">Résidentiel</option>
-                <option value="Commercial">Commercial</option>
-                <option value="Agricole">Agricole</option>
+                @for (u of usageOptions(); track u) {
+                  <option [value]="u">{{ u }}</option>
+                }
               </select>
             </div>
           </div>
@@ -231,6 +231,7 @@ export class MapView implements AfterViewInit {
   selectedParcel = signal<ParcelData | null>(null);
   parcels = signal<ParcelData[]>([]);
   filteredParcels = signal<ParcelData[]>([]);
+  usageOptions = signal<string[]>([]);
   stats = signal<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tileLayers: any = {};
@@ -319,6 +320,10 @@ export class MapView implements AfterViewInit {
       }
       
       this.parcels.set(data);
+      
+      const usages = [...new Set(data.map(p => p.usage))].filter(Boolean).sort();
+      this.usageOptions.set(usages);
+      
       this.applyFilters();
     } catch (error) {
       console.error("Error loading parcels:", error);
